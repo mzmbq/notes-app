@@ -15,6 +15,13 @@
       "when": 1754594769695,
       "tag": "0001_faithful_iron_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754642204408,
+      "tag": "0002_bizarre_cerebro",
+      "breakpoints": true
     }
   ]
 }
