@@ -1,12 +1,14 @@
 import "./global.css";
-import { Text, View } from "react-native";
+import SafeAreaWrapper from "./components/SafeAreaWrapper";
+import Routes from "./screens/Routes";
+import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-xl font-bold text-blue-500">
-        Welcome to Nativewind!
-      </Text>
-    </View>
+    <SafeAreaWrapper className="flex-1">
+      <NavigationContainer>
+        <Routes />
+      </NavigationContainer>
+    </SafeAreaWrapper>
   );
 }
