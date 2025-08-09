@@ -14,7 +14,7 @@ export const notes = pgTable("note", {
   content: varchar("content").notNull(),
   isFavorite: boolean("is_favorite").notNull().default(false),
   authorId: uuid("author_id")
-    .default(null!)
+    .notNull()
     .references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

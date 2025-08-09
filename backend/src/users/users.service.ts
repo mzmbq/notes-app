@@ -7,12 +7,9 @@ import { users } from "src/db/user";
 import { User } from "src/types/user";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
 import * as bcrypt from "bcrypt";
-import * as dotenv from "dotenv";
 import { eq } from "drizzle-orm";
 import { db } from "src/database/db";
 import { isUUID } from "class-validator";
-
-dotenv.config();
 
 @Injectable()
 export class UsersService {

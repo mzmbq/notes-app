@@ -1,9 +1,7 @@
 import { Module } from "@nestjs/common";
-import { drizzle } from "drizzle-orm/node-postgres";
 import { UsersService } from "./users.service";
 import { UsersController } from "./users.controller";
-
-const db = drizzle(process.env.DATABASE_URL!);
+import { db } from "src/database/db";
 
 @Module({
   providers: [
