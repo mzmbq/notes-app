@@ -1,6 +1,6 @@
 import "./global.css";
-import SafeAreaWrapper from "./components/SafeAreaWrapper";
-import Routes from "./screens/Routes";
+import SafeAreaWrapper from "./src/components/SafeAreaWrapper";
+import Routes from "./src/screens/Routes";
 import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
