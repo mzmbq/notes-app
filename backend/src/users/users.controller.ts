@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { CreateUserDto } from "./users.dto";
+import { CreateUserDto, UpdateUserDto } from "./users.dto";
 import { User } from "src/types/user";
 
 @Controller({ path: "user" })
@@ -15,5 +15,13 @@ export class UsersController {
   @Get(":id")
   async getUserById(@Param("id") id: string): Promise<User> {
     return this.usersService.getUserById(id);
+  }
+
+  @Patch(":id")
+  async updateUser(
+    @Param("id") id: string,
+    @Body() dto: UpdateUserDto,
+  ): Promise<User> {
+    return this.usersService.updateUser(id, dto);
   }
 }

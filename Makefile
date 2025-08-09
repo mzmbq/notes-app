@@ -6,4 +6,4 @@ run-frontend:
 	cd frontend && npx expo start --web --port 3001
 
 run-backend:
-	cd backend && npm run start
+	cd backend && npm run start:dev
