@@ -31,10 +31,10 @@ export class UsersService {
       return user[0];
     } catch (err) {
       if (err instanceof Error) {
-        throw new Error("[createUser] Failed by creating an user", err);
+        throw new Error("[createUser] Failed creating an user", err);
       }
     }
-    throw new Error("[createUser] Failed by creating an user (Unknown error)");
+    throw new Error("[createUser] Failed creating an user (Unknown error)");
   }
 
   async getUserById(id: string): Promise<User> {
@@ -59,16 +59,19 @@ export class UsersService {
       tempDto.passwordHash = await this.hashPassword(dto.password);
     }
     try {
-      await db.update(users).set(tempDto).where(eq(users.id, id));
+      await db
+        .update(users)
+        .set({ ...tempDto, updatedAt: new Date() })
+        .where(eq(users.id, id));
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(
-          `[updateUser] Failed by updating an user with id: ${id}, `,
+          `[updateUser] Failed updating an user with id: ${id}, `,
           err,
         );
       }
       throw new Error(
-        `[updateUser] Failed by updating an user with id: ${id} (Unknown Error)`,
+        `[updateUser] Failed updating an user with id: ${id} (Unknown Error)`,
       );
     }
     return this.getUserById(id);
