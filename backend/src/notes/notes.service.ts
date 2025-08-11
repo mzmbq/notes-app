@@ -9,21 +9,21 @@ import { CreateNoteDto, UpdateNoteDto } from "./notes.dto";
 import { Note } from "src/types/note";
 import { notes } from "src/db/note";
 import { db } from "src/database/db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { isUUID } from "class-validator";
+import { CurrentUser } from "src/types/currentUser";
 
 @Injectable()
 export class NotesService {
   private readonly logger = new Logger(NotesService.name);
-  async createNote(dto: CreateNoteDto): Promise<Note> {
+  async createNote(user: CurrentUser, dto: CreateNoteDto): Promise<Note> {
     try {
       const note = await db
         .insert(notes)
         .values({
           title: dto.title,
           content: dto.content,
-          // TODO: Get id from auth middleware
-          authorId: "3b8ad7df-9f10-4a13-bae7-dfdb414348f9",
+          authorId: user.userId,
         })
         .returning();
       return note[0];
@@ -52,48 +52,45 @@ export class NotesService {
   }
 
   // TODO: Get id from auth middleware
-  async getAllFavoriteNotes(): Promise<Note[]> {
+  async getAllFavoriteNotes(user: CurrentUser): Promise<Note[]> {
     try {
       const foundNotes = await db
         .select()
         .from(notes)
         .where(
-          and(
-            eq(notes.authorId, "3b8ad7df-9f10-4a13-bae7-dfdb414348f9"),
-            eq(notes.isFavorite, true),
-          ),
+          and(eq(notes.authorId, user.userId), eq(notes.isFavorite, true)),
         );
       return foundNotes;
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(
-          `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : 3b8ad7df-9f10-4a13-bae7-dfdb414348f9, `,
+          `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : ${user.userId}, `,
           err,
         );
       }
       throw new Error(
-        `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : 3b8ad7df-9f10-4a13-bae7-dfdb414348f9 (Unknown Error)`,
+        `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : ${user.userId} (Unknown Error)`,
       );
     }
   }
 
   // TODO: Get id from auth middleware
-  async getAllNotes(): Promise<Note[]> {
+  async getAllNotes(user: CurrentUser): Promise<Note[]> {
     try {
       const foundNotes = await db
         .select()
         .from(notes)
-        .where(eq(notes.authorId, "3b8ad7df-9f10-4a13-bae7-dfdb414348f9"));
+        .where(eq(notes.authorId, user.userId));
       return foundNotes;
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(
-          `[getAllNotesOfUser] Failed getting all favorite notes of user with id : 3b8ad7df-9f10-4a13-bae7-dfdb414348f9}, `,
+          `[getAllNotesOfUser] Failed getting all favorite notes of user with id : ${user.userId}}, `,
           err,
         );
       }
       throw new Error(
-        `[getAllNotesOfUser] Failed getting all favorite notes of user with id : 3b8ad7df-9f10-4a13-bae7-dfdb414348f9 (Unknown Error)`,
+        `[getAllNotesOfUser] Failed getting all favorite notes of user with id : ${user.userId} (Unknown Error)`,
       );
     }
   }
@@ -102,7 +99,7 @@ export class NotesService {
     try {
       const [updated] = await db
         .update(notes)
-        .set({ ...dto, updatedAt: sql`now()` })
+        .set({ ...dto, updatedAt: new Date() })
         .where(eq(notes.id, id))
         .returning();
       if (!updated) {

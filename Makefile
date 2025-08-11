@@ -8,6 +8,10 @@ run-frontend:
 run-backend:
 	cd backend && npm run start:dev
 
-#run local drizzle database 
-run-db:
+#run local drizzle stiduo 
+run-drizzle:
 	cd backend && npx drizzle-kit studio
+
+#
+generate-migrate:
+	cd backend && npx drizzle-kit generate && npx drizzle-kit migrate

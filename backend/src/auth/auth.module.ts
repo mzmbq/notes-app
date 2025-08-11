@@ -4,6 +4,7 @@ import { AuthController } from "./auth.controller";
 import { UsersModule } from "src/users/users.module";
 import { JwtModule } from "@nestjs/jwt";
 import * as dotenv from "dotenv";
+import { AuthGuard } from "./guards/auth.guard";
 dotenv.config();
 
 if (!process.env.JWT_SECRET) {
@@ -11,7 +12,7 @@ if (!process.env.JWT_SECRET) {
 }
 
 @Module({
-  providers: [AuthService],
+  providers: [AuthService, AuthGuard],
   controllers: [AuthController],
   imports: [
     UsersModule,

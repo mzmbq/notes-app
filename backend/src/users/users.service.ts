@@ -6,7 +6,7 @@ import {
 import { users } from "src/db/user";
 import { User } from "src/types/user";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "src/database/db";
 import { isUUID } from "class-validator";
 import { hashPassword } from "src/util/passwordHelpers";
@@ -70,7 +70,7 @@ export class UsersService {
     try {
       await db
         .update(users)
-        .set({ ...tempDto, updatedAt: sql`now()` })
+        .set({ ...tempDto, updatedAt: new Date() })
         .where(eq(users.id, id));
     } catch (err) {
       if (err instanceof Error) {
