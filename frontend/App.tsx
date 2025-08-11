@@ -5,7 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
   return (
-    <SafeAreaWrapper className="flex-1">
+    <SafeAreaWrapper className="flex-1 bg-gray-100">
       <NavigationContainer>
         <Routes />
       </NavigationContainer>

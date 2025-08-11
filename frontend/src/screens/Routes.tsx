@@ -10,12 +10,36 @@ import {
   IconStar,
   IconStarFilled,
   IconUsers,
-  IconWorldShare,
 } from "@tabler/icons-react-native";
 
 import { createTabIcon } from "../utils/icons";
 import Favorites from "./Favorites";
 import Shared from "./Shared";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Login from "./Login";
+import Register from "./Register";
+
+export type RootStackParamList = {
+  Login: undefined;
+  Register: undefined;
+  MainTabs: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const Routes = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Register" component={Register} />
+      <Stack.Screen name="MainTabs" component={Tabs} />
+    </Stack.Navigator>
+  );
+};
 
 export type TabParamList = {
   Home: undefined;
@@ -26,7 +50,7 @@ export type TabParamList = {
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const Routes = () => {
+const Tabs = () => {
   return (
     <Tab.Navigator
       initialRouteName="Home"
