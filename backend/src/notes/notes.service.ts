@@ -2,16 +2,19 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Logger,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { CreateNoteDto, UpdateNoteDto } from "./notes.dto";
 import { Note } from "src/types/note";
 import { notes } from "src/db/note";
 import { db } from "src/database/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { isUUID } from "class-validator";
 
 @Injectable()
 export class NotesService {
+  private readonly logger = new Logger(NotesService.name);
   async createNote(dto: CreateNoteDto): Promise<Note> {
     try {
       const note = await db
@@ -97,38 +100,52 @@ export class NotesService {
 
   async updateNote(id: string, dto: UpdateNoteDto): Promise<Note> {
     try {
-      await db
+      const [updated] = await db
         .update(notes)
-        .set({ ...dto, updatedAt: new Date() })
-        .where(eq(notes.id, id));
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new Error(
-          `[updateNote] Failed updating a note with id: ${id}, `,
-          err,
+        .set({ ...dto, updatedAt: sql`now()` })
+        .where(eq(notes.id, id))
+        .returning();
+      if (!updated) {
+        throw new NotFoundException(
+          `[updateNote] Failed updating note. Note with id ${id} not found`,
         );
       }
-      throw new Error(
-        `[updateNote] Failed updating a note with id: ${id} (Unknown Error)`,
+      return updated;
+    } catch (err) {
+      if (
+        err instanceof NotFoundException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      }
+      this.logger.error(
+        `[updateNote] Failed updating note ${id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      throw new InternalServerErrorException(
+        "[updateNote] Failed updating note",
       );
     }
-    return this.getNoteById(id);
   }
 
-  // TODO: Change the return type
-  async deleteNoteById(id: string): Promise<boolean> {
+  async deleteNoteById(id: string): Promise<void> {
     try {
-      await db.delete(notes).where(eq(notes.id, id));
-      return true;
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new Error(
-          `[deleteNote] Failed updating a note with id: ${id}, `,
-          err,
-        );
+      const deleted = await db
+        .delete(notes)
+        .where(eq(notes.id, id))
+        .returning({ id: notes.id });
+      if (deleted.length === 0) {
+        throw new NotFoundException(`Note with id ${id} not found`);
       }
-      throw new Error(
-        `[deleteNote] Failed updating a note with id: ${id} (Unknown Error)`,
+    } catch (err) {
+      if (err instanceof NotFoundException) throw err;
+
+      this.logger.error(
+        `Failed deleting note with id ${id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      throw new InternalServerErrorException(
+        "[deleteNote] Failed deleting note",
       );
     }
   }

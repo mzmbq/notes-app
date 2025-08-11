@@ -44,7 +44,7 @@ export class NotesController {
   }
 
   @Delete(":id")
-  async deleteNoteById(@Param("id") id: string): Promise<boolean> {
+  async deleteNoteById(@Param("id") id: string): Promise<void> {
     return this.notesService.deleteNoteById(id);
   }
 }
