@@ -6,18 +6,13 @@ import {
 import { users } from "src/db/user";
 import { User } from "src/types/user";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
-import * as bcrypt from "bcrypt";
 import { eq, sql } from "drizzle-orm";
 import { db } from "src/database/db";
 import { isUUID } from "class-validator";
+import { hashPassword } from "src/util/passwordHelpers";
 
 @Injectable()
 export class UsersService {
-  private async hashPassword(password: string): Promise<string> {
-    const salt = 10;
-    return await bcrypt.hash(password, salt);
-  }
-
   async createUser(dto: CreateUserDto): Promise<User> {
     try {
       const user = await db
@@ -25,7 +20,7 @@ export class UsersService {
         .values({
           email: dto.email,
           username: dto.username,
-          passwordHash: await this.hashPassword(dto.password),
+          passwordHash: await hashPassword(dto.password),
         })
         .returning();
       return user[0];
@@ -53,10 +48,24 @@ export class UsersService {
     return user;
   }
 
+  async getUserByUsername(username: string): Promise<User> {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
+    const user = result[0];
+    if (!user) {
+      throw new NotFoundException(
+        `[getUserByUsername] User with username "${username}" not found`,
+      );
+    }
+    return user;
+  }
+
   async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
     const tempDto: UpdateUserDto & { passwordHash?: string } = dto;
     if (dto.password) {
-      tempDto.passwordHash = await this.hashPassword(dto.password);
+      tempDto.passwordHash = await hashPassword(dto.password);
     }
     try {
       await db

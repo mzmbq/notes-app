@@ -7,3 +7,7 @@ run-frontend:
 
 run-backend:
 	cd backend && npm run start:dev
+
+#run local drizzle database 
+run-db:
+	cd backend && npx drizzle-kit studio
