@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import { RootStackParamList } from "./Routes";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import TextInput from "../components/TextInput";
-import useAuth from "../hooks/useAuth";
-import { LoginRequest } from "../api/user";
+import { fetchLogin, LoginRequest } from "../api/user";
 import { log } from "../logger/logger";
 import { logError } from "../utils/errors";
+import useFetchBackend from "../hooks/useFetchBackend";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -14,7 +14,12 @@ const Login = (props: Props) => {
   const naviation = props.navigation;
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { user, loading, error, login } = useAuth();
+  const {
+    response: user,
+    loading,
+    error,
+    doFetch: login,
+  } = useFetchBackend(fetchLogin);
 
   const handleLogin = async () => {
     try {
@@ -43,8 +48,10 @@ const Login = (props: Props) => {
         ></TextInput>
         <Button title="Login" onPress={handleLogin}></Button>
         <Text className="text-red-600">{error}</Text>
-        {user !== "" && (
-          <Text className="text-green-500">Signed in as user: {user}</Text>
+        {user && (
+          <Text className="text-green-500">
+            Signed in as user: {user.username}
+          </Text>
         )}
       </View>
 
