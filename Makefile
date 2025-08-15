@@ -22,3 +22,4 @@ run-db-local:
 		-v pgdata:/var/lib/postgresql/data \
 		-e POSTGRES_PASSWORD=pass \
 		postgres
+

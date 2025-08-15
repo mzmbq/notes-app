@@ -51,7 +51,6 @@ export class NotesService {
     return note;
   }
 
-  // TODO: Get id from auth middleware
   async getAllFavoriteNotes(user: CurrentUser): Promise<Note[]> {
     try {
       const foundNotes = await db
@@ -74,7 +73,6 @@ export class NotesService {
     }
   }
 
-  // TODO: Get id from auth middleware
   async getAllNotes(user: CurrentUser): Promise<Note[]> {
     try {
       const foundNotes = await db
