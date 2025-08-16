@@ -1,3 +1,4 @@
+import { log } from "../logger/logger";
 import { BACKEND_URL } from "./api";
 
 // TODO: Use DTOs from backend
@@ -15,6 +16,7 @@ export type LoginResponse = {
 // TODO: handle errors properly
 export const fetchLogin = async (req: LoginRequest): Promise<LoginResponse> => {
   const url = `${BACKEND_URL}/auth/login`;
+  log.debug("fetchLogin: Sending POST request to:", url);
   try {
     const response = await fetch(url, {
       method: "POST",
