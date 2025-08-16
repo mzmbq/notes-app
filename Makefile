@@ -2,17 +2,17 @@ install:
 	yarn install
 
 run-frontend:
-	cd packages/frontend && npx expo start --web --port 3001
+	cd frontend && npx expo start --web --port 3001
 
 run-backend:
-	cd packages/backend && yarn start:dev
+	cd backend && yarn start:dev
 
 # Run local drizzle stiduo 
 run-db-ui:
-	cd packages/backend && npx drizzle-kit studio
+	cd backend && npx drizzle-kit studio
 
 generate-migrate:
-	cd packages/backend && npx drizzle-kit generate && npx drizzle-kit migrate
+	cd backend && npx drizzle-kit generate && npx drizzle-kit migrate
 
 create-db-container:
 	docker run -d \
