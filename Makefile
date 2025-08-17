@@ -10,7 +10,8 @@ rebuild: clean build
 	@echo "Rebuild complete."
 
 clean:
-	rm -rf types/dist types/*.tsbuildinfo types/.tsbuildinfo \
+	@echo "Cleaning up build artifacts..."
+	@rm -rf types/dist types/*.tsbuildinfo types/.tsbuildinfo \
     	backend/dist backend/*.tsbuildinfo backend/.tsbuildinfo \
         frontend/dist frontend/*.tsbuildinfo frontend/.tsbuildinfo || true
 

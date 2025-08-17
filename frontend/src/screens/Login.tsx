@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { RootStackParamList } from "./Routes";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import TextInput from "../components/TextInput";
-import { fetchLogin, LoginRequest } from "../api/user";
+import { fetchLogin } from "../api/user";
 import { log } from "../logger/logger";
 import { logError } from "../utils/errors";
 import useFetchBackend from "../hooks/useFetchBackend";

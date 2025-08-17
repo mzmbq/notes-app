@@ -13,5 +13,9 @@
     {
       "path": "../types"
     },
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
   ]
 }

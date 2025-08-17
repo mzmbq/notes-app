@@ -27,10 +27,14 @@ export const fetchLogin = async (req: AuthInput): Promise<AuthResult> => {
   }
 };
 
+type UserCreateRequest = {
+  email: string;
+  username: string;
+  password: string;
+};
+
 export const fetchUserCreate = async (
-  email: string,
-  username: string,
-  password: string
+  req: UserCreateRequest
 ): Promise<User> => {
   const url = `${BACKEND_URL}/user`;
   const response = await fetch(url, {
@@ -39,9 +43,7 @@ export const fetchUserCreate = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      email: email,
-      username: username,
-      password: password,
+      req,
     }),
   });
 

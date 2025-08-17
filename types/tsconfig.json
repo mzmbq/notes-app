@@ -28,7 +28,7 @@
     "strict": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
-    "isolatedModules": true,
+    // "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
@@ -38,5 +38,9 @@
     "declarationMap": true,
     "incremental": true,
     "outDir": "./dist",
-  }
+  },
+  // Required because of "composite": true
+  "include": [
+    "src/**/*"
+  ]
 }
