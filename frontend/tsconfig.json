@@ -2,10 +2,16 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "paths": {
-      "notes-app-types": [
-        "../types/dist"
-      ]
+    // From https://dev.to/mxro/the-ultimate-guide-to-typescript-monorepos-5ap7
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "outDir": "./dist",
+  },
+  "references": [
+    {
+      "path": "../types"
     },
-  }
+  ]
 }

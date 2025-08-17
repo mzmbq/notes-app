@@ -4,5 +4,6 @@
     "backend",
     "frontend",
     "types"
-  ]
+  ],
+  "packageManager": "yarn@4.9.2"
 }
