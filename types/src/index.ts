@@ -1,3 +1,3 @@
-export * from "./notes";
-export * from "./users";
-export * from "./auth";
+export * from "./notes/index.js";
+export * from "./users/index.js";
+export * from "./auth/index.js";

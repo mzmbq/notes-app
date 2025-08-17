@@ -1,3 +1,3 @@
-export * from "./authInput";
-export * from "./authResult";
-export * from "./signInData";
+export * from "./authInput.js";
+export * from "./authResult.js";
+export * from "./signInData.js";
