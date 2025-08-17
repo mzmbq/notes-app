@@ -2,7 +2,7 @@ install:
 	yarn install
 
 run-frontend:
-	cd frontend && BROWSER=none npx expo start --web --port 3001
+	cd frontend && npx expo start --web --port 3001
 
 run-backend:
 	cd backend && yarn start:dev

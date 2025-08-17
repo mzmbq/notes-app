@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
-import { User } from "src/types/user";
+import { User } from "notes-app-types";
 
 @Controller({ path: "user" })
 export class UsersController {

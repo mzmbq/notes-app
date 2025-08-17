@@ -1,20 +1,9 @@
 import { log } from "../logger/logger";
 import { BACKEND_URL } from "./api";
-
-// TODO: Use DTOs from backend
-export type LoginRequest = {
-  username: string;
-  password: string;
-};
-
-export type LoginResponse = {
-  accessToken: string;
-  userId: string;
-  username: string;
-};
+import { AuthInput, AuthResult, User } from "notes-app-types";
 
 // TODO: handle errors properly
-export const fetchLogin = async (req: LoginRequest): Promise<LoginResponse> => {
+export const fetchLogin = async (req: AuthInput): Promise<AuthResult> => {
   const url = `${BACKEND_URL}/auth/login`;
   log.debug("fetchLogin: Sending POST request to:", url);
   try {
@@ -38,31 +27,22 @@ export const fetchLogin = async (req: LoginRequest): Promise<LoginResponse> => {
   }
 };
 
-// TODO: Use DTOs from backend
-export type CrateUserRequest = {
-  email: string;
-  username: string;
-  password: string;
-};
-
-export type CreateUserResponse = {
-  id: string;
-  username: string;
-  email: string;
-  passwordHash: string;
-  createdAt: Date;
-};
-
 export const fetchUserCreate = async (
-  req: CrateUserRequest
-): Promise<CreateUserResponse> => {
+  email: string,
+  username: string,
+  password: string
+): Promise<User> => {
   const url = `${BACKEND_URL}/user`;
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(req),
+    body: JSON.stringify({
+      email: email,
+      username: username,
+      password: password,
+    }),
   });
 
   if (!response.ok) {

@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from "@nestjs/common";
-import { CurrentUser as CurrentUserPayload } from "src/types/currentUser";
+import { CurrentUser as CurrentUserPayload } from "notes-app-types";
 
 export const CurrentUser = createParamDecorator<CurrentUserPayload>(
   (_data: unknown, ctx: ExecutionContext): CurrentUserPayload => {
