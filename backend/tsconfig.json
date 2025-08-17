@@ -23,7 +23,12 @@
     "noFallthroughCasesInSwitch": false,
     "baseUrl": "./",
     "paths": {
-      "src/*": ["src/*"]
+      "src/*": [
+        "src/*"
+      ],
+      "notes-app-types": [
+        "../types/dist"
+      ]
     }
   }
 }
