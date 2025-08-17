@@ -1,5 +1,18 @@
+.PHONY: install build rebuild clean run-frontend run-backend run-db-ui generate-migrate create-db-container
+
 install:
 	yarn install
+
+build:
+	npx tsc -b --verbose
+
+rebuild: clean build
+	@echo "Rebuild complete."
+
+clean:
+	rm -rf types/dist types/*.tsbuildinfo types/.tsbuildinfo \
+    	backend/dist backend/*.tsbuildinfo backend/.tsbuildinfo \
+        frontend/dist frontend/*.tsbuildinfo frontend/.tsbuildinfo || true
 
 run-frontend:
 	cd frontend && npx expo start --web --port 3001
@@ -21,4 +34,6 @@ create-db-container:
 		-v pgdata:/var/lib/postgresql/data \
 		-e POSTGRES_PASSWORD=pass \
 		postgres
+
+
 
