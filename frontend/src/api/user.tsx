@@ -1,9 +1,14 @@
 import { log } from "../logger/logger";
 import { BACKEND_URL } from "./api";
-import { AuthInput, AuthResult, User } from "notes-app-types";
+import {
+  AuthReq,
+  AuthResp,
+  User,
+  SignUpResp,
+  SignUpReq,
+} from "notes-app-types";
 
-// TODO: handle errors properly
-export const fetchLogin = async (req: AuthInput): Promise<AuthResult> => {
+export const fetchLogin = async (req: AuthReq): Promise<AuthResp> => {
   const url = `${BACKEND_URL}/auth/login`;
   log.debug("fetchLogin: Sending POST request to:", url);
   try {
@@ -27,16 +32,9 @@ export const fetchLogin = async (req: AuthInput): Promise<AuthResult> => {
   }
 };
 
-type UserCreateRequest = {
-  email: string;
-  username: string;
-  password: string;
-};
-
-export const fetchUserCreate = async (
-  req: UserCreateRequest
-): Promise<User> => {
-  const url = `${BACKEND_URL}/user`;
+export const fetchSignUp = async (req: SignUpReq): Promise<SignUpResp> => {
+  const url = `${BACKEND_URL}/auth/signup`;
+  log.debug("fetchSignUp: Sending POST request to:", url);
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -49,7 +47,7 @@ export const fetchUserCreate = async (
 
   if (!response.ok) {
     throw new Error(
-      `Create user failed: ${response.status} ${response.statusText}`
+      `Sign up failed failed: ${response.status} ${response.statusText}`
     );
   }
 

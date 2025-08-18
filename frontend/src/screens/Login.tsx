@@ -7,6 +7,7 @@ import { fetchLogin } from "../api/user";
 import { log } from "../logger/logger";
 import { logError } from "../utils/errors";
 import useFetchBackend from "../hooks/useFetchBackend";
+import { useAuth } from "../hooks/useAuth";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -14,6 +15,7 @@ const Login = (props: Props) => {
   const naviation = props.navigation;
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { authState, signIn, signOut } = useAuth();
   const {
     response: user,
     loading,
@@ -28,10 +30,16 @@ const Login = (props: Props) => {
         password: password,
       });
       // TODO: store the token in some state
+      await signIn(resp);
       log.info("Signed in as", resp.username);
     } catch (err) {
       logError(err, "Login failed");
     }
+  };
+
+  const handleSignOut = async () => {
+    log.info("Signing out");
+    await signOut();
   };
 
   return (
@@ -54,6 +62,15 @@ const Login = (props: Props) => {
           </Text>
         )}
       </View>
+
+      <Button
+        title="Get current session data"
+        onPress={() => {
+          log.info("Current session", authState);
+        }}
+      ></Button>
+
+      <Button title="Sign out" onPress={handleSignOut}></Button>
 
       <Button
         title="Register"
