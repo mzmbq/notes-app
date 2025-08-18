@@ -1,0 +1,14 @@
+{
+    "files": [], // Prevent root build from including project source files 
+    "references": [
+        {
+            "path": "./types"
+        },
+        {
+            "path": "./backend"
+        },
+        {
+            "path": "./frontend"
+        }
+    ]
+}

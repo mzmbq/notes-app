@@ -6,12 +6,12 @@ import {
   InternalServerErrorException,
 } from "@nestjs/common";
 import { CreateNoteDto, UpdateNoteDto } from "./notes.dto";
-import { Note } from "src/types/note";
 import { notes } from "src/db/note";
 import { db } from "src/database/db";
 import { eq, and } from "drizzle-orm";
 import { isUUID } from "class-validator";
-import { CurrentUser } from "src/types/currentUser";
+import { CurrentUser } from "notes-app-types";
+import { Note } from "notes-app-types";
 
 @Injectable()
 export class NotesService {

@@ -1,6 +1,6 @@
 import { IsString } from "class-validator";
 
-class Input {
+class LoginDto {
   @IsString()
   username: string;
 
@@ -8,4 +8,4 @@ class Input {
   password: string;
 }
 
-export { Input };
+export { LoginDto };

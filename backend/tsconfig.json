@@ -6,15 +6,12 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
     "sourceMap": true,
-    "outDir": "./dist",
-    "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,7 +20,20 @@
     "noFallthroughCasesInSwitch": false,
     "baseUrl": "./",
     "paths": {
-      "src/*": ["src/*"]
-    }
-  }
+      "src/*": [
+        "src/*"
+      ],
+    },
+    // From https://dev.to/mxro/the-ultimate-guide-to-typescript-monorepos-5ap7
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "outDir": "./dist"
+  },
+  "references": [
+    {
+      "path": "../types"
+    },
+  ]
 }

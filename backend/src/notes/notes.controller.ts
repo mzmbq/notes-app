@@ -10,10 +10,9 @@ import {
 } from "@nestjs/common";
 import { NotesService } from "./notes.service";
 import { CreateNoteDto, UpdateNoteDto } from "./notes.dto";
-import { Note } from "src/types/note";
-import { CurrentUser } from "src/common/decorators/current-user.decorator";
+import type { Note, CurrentUser } from "notes-app-types";
+import { CurrentUser as CurrentUserDecorator } from "src/common/decorators/current-user.decorator";
 import { AuthGuard } from "src/auth/guards/auth.guard";
-import * as currentUser from "src/types/currentUser";
 
 @Controller({ path: "notes" })
 export class NotesController {
@@ -22,7 +21,7 @@ export class NotesController {
   @Post()
   @UseGuards(AuthGuard)
   async createNote(
-    @CurrentUser() user: currentUser.CurrentUser,
+    @CurrentUserDecorator() user: CurrentUser,
     @Body() dto: CreateNoteDto,
   ): Promise<Note> {
     return this.notesService.createNote(user, dto);
@@ -30,7 +29,7 @@ export class NotesController {
   @UseGuards(AuthGuard)
   @Get("/all")
   async getAllNotes(
-    @CurrentUser() user: currentUser.CurrentUser,
+    @CurrentUserDecorator() user: CurrentUser,
   ): Promise<Note[]> {
     return this.notesService.getAllNotes(user);
   }
@@ -38,7 +37,7 @@ export class NotesController {
   @UseGuards(AuthGuard)
   @Get("/favorites")
   async getAllFavoriteNotes(
-    @CurrentUser() user: currentUser.CurrentUser,
+    @CurrentUserDecorator() user: CurrentUser,
   ): Promise<Note[]> {
     return this.notesService.getAllFavoriteNotes(user);
   }

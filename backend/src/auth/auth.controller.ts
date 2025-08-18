@@ -10,14 +10,14 @@ import {
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthGuard } from "./guards/auth.guard";
-import { Input } from "./auth.dto";
+import { LoginDto } from "./auth.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post("login")
-  login(@Body() input: Input) {
+  login(@Body() input: LoginDto) {
     return this.authService.authenticate(input);
   }
 

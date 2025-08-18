@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { users } from "src/db/user";
-import { User } from "src/types/user";
+import { User } from "notes-app-types";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
 import { eq } from "drizzle-orm";
 import { db } from "src/database/db";
