@@ -53,3 +53,29 @@ export const fetchSignUp = async (req: SignUpReq): Promise<SignUpResp> => {
 
   return response.json();
 };
+
+type FetchMeResp = {
+  userId: string;
+  username: string;
+};
+
+export const fetchMe = async (token: string): Promise<FetchMeResp> => {
+  const url = `${BACKEND_URL}/auth/me`;
+  log.debug("fetchSignUp: Sending POST request to:", url);
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      // TODO: Improve token handling
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Could not fetch "auth/me" enpoint: ${response.status} ${response.statusText}`
+    );
+  }
+
+  return response.json();
+};

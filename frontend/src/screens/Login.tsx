@@ -1,5 +1,5 @@
 import { View, Text, Button } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RootStackParamList } from "./Routes";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import TextInput from "../components/TextInput";
@@ -12,16 +12,25 @@ import { useAuth } from "../hooks/useAuth";
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 const Login = (props: Props) => {
-  const naviation = props.navigation;
+  const navigation = props.navigation;
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { authState, signIn, signOut } = useAuth();
+  const { state: authState, signIn, signOut } = useAuth();
   const {
     response: user,
     loading,
     error,
     doFetch: login,
   } = useFetchBackend(fetchLogin);
+
+  useEffect(() => {
+    const redirect = async () => {
+      if (authState.authenticated) {
+        navigation.navigate("MainTabs");
+      }
+    };
+    redirect();
+  }, [authState]);
 
   const handleLogin = async () => {
     try {
@@ -74,11 +83,11 @@ const Login = (props: Props) => {
 
       <Button
         title="Register"
-        onPress={() => naviation.navigate("Register")}
+        onPress={() => navigation.navigate("Register")}
       ></Button>
       <Button
         title="Skip"
-        onPress={() => naviation.navigate("MainTabs")}
+        onPress={() => navigation.navigate("MainTabs")}
       ></Button>
     </View>
   );
