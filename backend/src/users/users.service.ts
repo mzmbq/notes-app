@@ -1,6 +1,9 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { users } from "src/db/user";
@@ -10,9 +13,11 @@ import { eq } from "drizzle-orm";
 import { db } from "src/database/db";
 import { isUUID } from "class-validator";
 import { hashPassword } from "src/util/passwordHelpers";
+import { DatabaseError } from "pg";
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   async createUser(dto: CreateUserDto): Promise<User> {
     try {
       const user = await db
@@ -25,11 +30,29 @@ export class UsersService {
         .returning();
       return user[0];
     } catch (err) {
-      if (err instanceof Error) {
-        throw new Error("[createUser] Failed creating an user", err);
+      const dbErr = err.cause;
+      if (dbErr instanceof DatabaseError) {
+        if (dbErr.constraint === "user_email_unique") {
+          this.logger.error(
+            `[createUser] Failed creating user. User with email: ${dto.email} already exists`,
+          );
+          throw new ConflictException(
+            `[createUser] Failed creating user. User with email: ${dto.email} already exists`,
+          );
+        }
+        if (dbErr.constraint === "user_username_unique") {
+          this.logger.error(
+            `[createUser] Failed creating user. User with username: ${dto.username} already exists`,
+          );
+          throw new ConflictException(
+            `[createUser] Failed creating user. User with username: ${dto.username} already exists`,
+          );
+        }
       }
+      throw new InternalServerErrorException(
+        "[createUser] Failed creating user",
+      );
     }
-    throw new Error("[createUser] Failed creating an user (Unknown error)");
   }
 
   async getUserById(id: string): Promise<User> {
@@ -41,6 +64,7 @@ export class UsersService {
     const result = await db.select().from(users).where(eq(users.id, id));
     const user = result[0];
     if (!user) {
+      this.logger.error(`[getUserById] User with ID "${id}" not found`);
       throw new NotFoundException(
         `[getUserById] User with ID "${id}" not found`,
       );
@@ -63,25 +87,40 @@ export class UsersService {
   }
 
   async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
-    const tempDto: UpdateUserDto & { passwordHash?: string } = dto;
-    if (dto.password) {
-      tempDto.passwordHash = await hashPassword(dto.password);
-    }
+    await this.getUserById(id);
     try {
       await db
         .update(users)
-        .set({ ...tempDto, updatedAt: new Date() })
+        .set({
+          email: dto.email,
+          username: dto.username,
+          passwordHash: await hashPassword(dto.password),
+          updatedAt: new Date(),
+        })
         .where(eq(users.id, id));
     } catch (err) {
-      if (err instanceof Error) {
-        throw new Error(
-          `[updateUser] Failed updating an user with id: ${id}, `,
-          err,
-        );
+      const dbErr = err.cause;
+      if (dbErr instanceof DatabaseError) {
+        if (dbErr.constraint === "user_email_unique") {
+          this.logger.error(
+            `[updateUser] Failed updating user. User with email: ${dto.email} already exists`,
+            err,
+          );
+          throw new ConflictException(
+            `[updateUser] Failed updating user. User with email: ${dto.email} already exists`,
+            err,
+          );
+        }
+        if (dbErr.constraint === "user_username_unique") {
+          this.logger.error(
+            `[updateUser] Failed updating user. User with username: ${dto.username} already exists`,
+          );
+          throw new ConflictException(
+            `[updateUser] Failed updating user. User with username: ${dto.username} already exists`,
+          );
+        }
       }
-      throw new Error(
-        `[updateUser] Failed updating an user with id: ${id} (Unknown Error)`,
-      );
+      throw new Error("[updateUser] Failed updating user", err);
     }
     return this.getUserById(id);
   }
