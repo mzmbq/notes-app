@@ -19,7 +19,7 @@ export class AuthService {
         username: user.username,
       };
     }
-    throw new Error("valiade user failed");
+    throw new Error("validate user failed");
   }
 
   async authenticate(input: AuthReq): Promise<AuthResp> {

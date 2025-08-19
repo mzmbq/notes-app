@@ -40,9 +40,7 @@ export const fetchSignUp = async (req: SignUpReq): Promise<SignUpResp> => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      req,
-    }),
+    body: JSON.stringify(req),
   });
 
   if (!response.ok) {
