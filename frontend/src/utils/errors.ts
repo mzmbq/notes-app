@@ -15,3 +15,8 @@ export const ErrorToText = (err: unknown): string => {
     return String(err);
   }
 };
+
+export const NewError = (msg: string) => {
+  log.error(msg);
+  return new Error(msg);
+};

@@ -1,6 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { log } from "../logger/logger";
 import { Platform } from "react-native";
+import { NewError } from "./errors";
 
 const save = async (key: string, value: string) => {
   log.debug(`[secureStore] Setting the key: ${key} to value: ${value}`);
@@ -16,17 +17,18 @@ const get = async (key: string): Promise<string> => {
   if (Platform.OS === "web") {
     const result = await cookieStore.get(key);
     if (!result || !result.value) {
-      const errMsg = `[secureStore] Couldn't not get the cookie value for: ${key}`;
-      throw new Error(errMsg);
+      throw NewError(
+        `[secureStore] Couldn't not get the cookie value for: ${key}`
+      );
     }
     return result.value;
   }
 
   const result = await SecureStore.getItemAsync(key);
   if (!result) {
-    const errMsg = `[secureStore] Couldn't not get the secure value for: ${key}`;
-    log.error(errMsg);
-    throw new Error(errMsg);
+    throw NewError(
+      `[secureStore] Couldn't not get the secure value for: ${key}`
+    );
   }
   return result;
 };
