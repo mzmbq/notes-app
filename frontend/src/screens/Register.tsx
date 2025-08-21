@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { RootStackParamList } from "./Routes";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import useFetchBackend from "../hooks/useFetchBackend";
-import { fetchUserCreate } from "../api/user";
+import { fetchSignUp } from "../api/user";
 import TextInput from "../components/TextInput";
 import { logError } from "../utils/errors";
 import { log } from "../logger/logger";
@@ -17,11 +17,11 @@ const Register = (props: Props) => {
   const [password, setPassword] = useState("");
   const [passwordRepeat, setPasswordRepeat] = useState("");
   const {
-    response: user,
+    response: signUpResponse,
     loading,
     error,
     doFetch: register,
-  } = useFetchBackend(fetchUserCreate);
+  } = useFetchBackend(fetchSignUp);
 
   const handleRegister = async () => {
     if (password != passwordRepeat) {
@@ -34,7 +34,7 @@ const Register = (props: Props) => {
         email: email,
         password: password,
       });
-      log.info("Created a new user:", resp.username);
+      log.info("Created a new user:", resp.id);
     } catch (err) {
       logError(err, "Register Failed");
     }
@@ -63,9 +63,9 @@ const Register = (props: Props) => {
         ></TextInput>
         <Button title="Register" onPress={handleRegister}></Button>
         <Text className="text-red-600">{error}</Text>
-        {user && (
+        {signUpResponse && (
           <Text className="text-green-500">
-            Created a new user: {user.username}
+            Created a new user: {signUpResponse.id}
           </Text>
         )}
       </View>

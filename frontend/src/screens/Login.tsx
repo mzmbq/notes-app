@@ -1,5 +1,5 @@
 import { View, Text, Button } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RootStackParamList } from "./Routes";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import TextInput from "../components/TextInput";
@@ -7,19 +7,30 @@ import { fetchLogin } from "../api/user";
 import { log } from "../logger/logger";
 import { logError } from "../utils/errors";
 import useFetchBackend from "../hooks/useFetchBackend";
+import { useAuth } from "../hooks/useAuth";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 const Login = (props: Props) => {
-  const naviation = props.navigation;
+  const navigation = props.navigation;
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { state: authState, signIn, signOut } = useAuth();
   const {
     response: user,
     loading,
     error,
     doFetch: login,
   } = useFetchBackend(fetchLogin);
+
+  useEffect(() => {
+    const redirect = async () => {
+      if (authState.authenticated) {
+        navigation.navigate("MainTabs");
+      }
+    };
+    redirect();
+  }, [authState]);
 
   const handleLogin = async () => {
     try {
@@ -28,10 +39,16 @@ const Login = (props: Props) => {
         password: password,
       });
       // TODO: store the token in some state
+      await signIn(resp);
       log.info("Signed in as", resp.username);
     } catch (err) {
       logError(err, "Login failed");
     }
+  };
+
+  const handleSignOut = async () => {
+    log.info("Signing out");
+    await signOut();
   };
 
   return (
@@ -56,12 +73,21 @@ const Login = (props: Props) => {
       </View>
 
       <Button
+        title="Get current session data"
+        onPress={() => {
+          log.info("Current session", authState);
+        }}
+      ></Button>
+
+      <Button title="Sign out" onPress={handleSignOut}></Button>
+
+      <Button
         title="Register"
-        onPress={() => naviation.navigate("Register")}
+        onPress={() => navigation.navigate("Register")}
       ></Button>
       <Button
         title="Skip"
-        onPress={() => naviation.navigate("MainTabs")}
+        onPress={() => navigation.navigate("MainTabs")}
       ></Button>
     </View>
   );

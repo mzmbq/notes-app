@@ -11,6 +11,7 @@ import {
 import { AuthService } from "./auth.service";
 import { AuthGuard } from "./guards/auth.guard";
 import { LoginDto } from "./auth.dto";
+import { CreateUserDto } from "src/users/users.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -19,6 +20,11 @@ export class AuthController {
   @Post("login")
   login(@Body() input: LoginDto) {
     return this.authService.authenticate(input);
+  }
+
+  @Post("signup")
+  signUp(@Body() input: CreateUserDto) {
+    return this.authService.signup(input);
   }
 
   @UseGuards(AuthGuard)

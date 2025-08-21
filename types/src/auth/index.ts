@@ -1,3 +1,2 @@
-export * from "./authInput.js";
-export * from "./authResult.js";
-export * from "./signInData.js";
+export * from "./login.js";
+export * from "./signup.js";

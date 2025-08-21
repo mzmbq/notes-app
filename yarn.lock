@@ -6831,6 +6831,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-secure-store@npm:~14.2.3":
+  version: 14.2.3
+  resolution: "expo-secure-store@npm:14.2.3"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/c1414e2a0a470a4531ae8b6f04e355184e29f61c41c988f9c9f6a3fa2a3f563382a7d44976d8ed560165288993971d295d4071e4921fe17105f3b807180e6f06
+  languageName: node
+  linkType: hard
+
 "expo-status-bar@npm:~2.2.3":
   version: 2.2.3
   resolution: "expo-status-bar@npm:2.2.3"
@@ -10189,6 +10198,7 @@ __metadata:
     "@tabler/icons-react-native": "npm:^3.34.1"
     "@types/react": "npm:~19.0.10"
     expo: "npm:~53.0.20"
+    expo-secure-store: "npm:~14.2.3"
     expo-status-bar: "npm:~2.2.3"
     nativewind: "npm:^4.1.23"
     notes-app-types: "workspace:*"
