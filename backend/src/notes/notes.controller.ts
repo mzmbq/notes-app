@@ -44,22 +44,29 @@ export class NotesController {
 
   @UseGuards(AuthGuard)
   @Get(":id")
-  async getNoteById(@Param("id") id: string): Promise<Note> {
-    return this.notesService.getNoteById(id);
+  async getNoteById(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("id") id: string,
+  ): Promise<Note> {
+    return this.notesService.getNoteById(user, id);
   }
 
   @UseGuards(AuthGuard)
   @Patch(":id")
   async updateNote(
+    @CurrentUserDecorator() user: CurrentUser,
     @Param("id") id: string,
     @Body() dto: UpdateNoteDto,
   ): Promise<Note> {
-    return this.notesService.updateNote(id, dto);
+    return this.notesService.updateNote(user, id, dto);
   }
 
   @UseGuards(AuthGuard)
   @Delete(":id")
-  async deleteNoteById(@Param("id") id: string): Promise<void> {
-    return this.notesService.deleteNoteById(id);
+  async deleteNoteById(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("id") id: string,
+  ): Promise<void> {
+    return this.notesService.deleteNoteById(user, id);
   }
 }

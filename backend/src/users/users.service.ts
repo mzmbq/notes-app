@@ -1,13 +1,14 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { users } from "src/db/user";
-import { User } from "notes-app-types";
+import { CurrentUser, User } from "notes-app-types";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
 import { eq } from "drizzle-orm";
 import { db } from "src/database/db";
@@ -35,6 +36,7 @@ export class UsersService {
         if (dbErr.constraint === "user_email_unique") {
           this.logger.error(
             `[createUser] Failed creating user. User with email: ${dto.email} already exists`,
+            { dbErr },
           );
           throw new ConflictException(
             `[createUser] Failed creating user. User with email: ${dto.email} already exists`,
@@ -43,6 +45,7 @@ export class UsersService {
         if (dbErr.constraint === "user_username_unique") {
           this.logger.error(
             `[createUser] Failed creating user. User with username: ${dto.username} already exists`,
+            { dbErr },
           );
           throw new ConflictException(
             `[createUser] Failed creating user. User with username: ${dto.username} already exists`,
@@ -86,15 +89,22 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
-    await this.getUserById(id);
+  async updateUser(
+    currentUser: CurrentUser,
+    id: string,
+    dto: UpdateUserDto,
+  ): Promise<User> {
+    const foundUser = await this.getUserById(id);
+    if (currentUser.userId !== foundUser.id) {
+      throw new ForbiddenException("You can't update another user");
+    }
     try {
       await db
         .update(users)
         .set({
           email: dto.email,
           username: dto.username,
-          passwordHash: await hashPassword(dto.password),
+          passwordHash: dto.password && (await hashPassword(dto.password)),
           updatedAt: new Date(),
         })
         .where(eq(users.id, id));
@@ -104,23 +114,23 @@ export class UsersService {
         if (dbErr.constraint === "user_email_unique") {
           this.logger.error(
             `[updateUser] Failed updating user. User with email: ${dto.email} already exists`,
-            err,
+            { dbErr },
           );
           throw new ConflictException(
             `[updateUser] Failed updating user. User with email: ${dto.email} already exists`,
-            err,
           );
         }
         if (dbErr.constraint === "user_username_unique") {
           this.logger.error(
             `[updateUser] Failed updating user. User with username: ${dto.username} already exists`,
+            { dbErr },
           );
           throw new ConflictException(
             `[updateUser] Failed updating user. User with username: ${dto.username} already exists`,
           );
         }
       }
-      throw new Error("[updateUser] Failed updating user", err);
+      throw new Error("[updateUser] Failed updating user", { cause: err });
     }
     return this.getUserById(id);
   }

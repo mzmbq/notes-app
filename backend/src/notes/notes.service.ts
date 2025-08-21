@@ -4,6 +4,7 @@ import {
   NotFoundException,
   Logger,
   InternalServerErrorException,
+  ForbiddenException,
 } from "@nestjs/common";
 import { CreateNoteDto, UpdateNoteDto } from "./notes.dto";
 import { notes } from "src/db/note";
@@ -39,7 +40,7 @@ export class NotesService {
     throw new Error("[createNote] Failed creating a note (Unknown error)");
   }
 
-  async getNoteById(id: string): Promise<Note> {
+  async getNoteById(currentUser: CurrentUser, id: string): Promise<Note> {
     if (!isUUID(id)) {
       throw new BadRequestException(
         `[getNoteById] Invalid note ID format: "${id}"`,
@@ -51,6 +52,11 @@ export class NotesService {
       this.logger.error(`[getNoteById] Note with ID "${id}" not found`);
       throw new NotFoundException(
         `[getNoteById] Note with ID "${id}" not found`,
+      );
+    }
+    if (currentUser.userId !== note.authorId) {
+      throw new ForbiddenException(
+        "You can't get / update / delete another user's note",
       );
     }
     return note;
@@ -69,10 +75,10 @@ export class NotesService {
       if (err instanceof Error) {
         this.logger.error(
           `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : ${user.userId}`,
+          { cause: err },
         );
         throw new Error(
           `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : ${user.userId}, `,
-          err,
         );
       }
       throw new Error(
@@ -92,6 +98,7 @@ export class NotesService {
       if (err instanceof Error) {
         this.logger.error(
           `[getAllNotesOfUser] Failed getting all favorite notes of user with id : ${user.userId}`,
+          { cause: err },
         );
         throw new Error(
           `[getAllNotesOfUser] Failed getting all favorite notes of user with id : ${user.userId}}, `,
@@ -104,8 +111,12 @@ export class NotesService {
     }
   }
 
-  async updateNote(id: string, dto: UpdateNoteDto): Promise<Note> {
-    await this.getNoteById(id);
+  async updateNote(
+    currentUser: CurrentUser,
+    id: string,
+    dto: UpdateNoteDto,
+  ): Promise<Note> {
+    await this.getNoteById(currentUser, id);
     try {
       const [updated] = await db
         .update(notes)
@@ -119,22 +130,24 @@ export class NotesService {
         .returning();
       return updated;
     } catch (err) {
-      this.logger.error(`[updateNote] Failed updating note ${id}`, err);
+      this.logger.error(`[updateNote] Failed updating note ${id}`, {
+        cause: err,
+      });
       throw new InternalServerErrorException(
         "[updateNote] Failed updating note",
       );
     }
   }
 
-  async deleteNoteById(id: string): Promise<void> {
-    await this.getNoteById(id);
+  async deleteNoteById(currentUser: CurrentUser, id: string): Promise<void> {
+    await this.getNoteById(currentUser, id);
     try {
-      const deleted = await db
+      await db
         .delete(notes)
         .where(eq(notes.id, id))
         .returning({ id: notes.id });
     } catch (err) {
-      this.logger.error(`Failed deleting note with id ${id}`, err);
+      this.logger.error(`Failed deleting note with id ${id}`, { cause: err });
       throw new InternalServerErrorException(
         "[deleteNote] Failed deleting note",
       );
