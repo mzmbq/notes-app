@@ -95,7 +95,7 @@ const Home = ({ navigation }: Props) => {
         className="w-full"
         data={notes}
         renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id.toString()}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={() => {
@@ -107,7 +107,7 @@ const Home = ({ navigation }: Props) => {
           }
           return null;
         }}
-        ListEmptyComponent={loading ? listEmptyMessage : null}
+        ListEmptyComponent={!loading && !error ? listEmptyMessage : null}
       />
     </View>
   );

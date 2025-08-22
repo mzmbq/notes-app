@@ -13,7 +13,7 @@ import { SignUpReq, SignUpResp } from "notes-app-types";
 type Props = NativeStackScreenProps<RootStackParamList, "Register">;
 
 const Register = (props: Props) => {
-  const naviation = props.navigation;
+  const navigation = props.navigation;
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +39,7 @@ const Register = (props: Props) => {
       });
       log.info("Created a new user:", resp.userId);
       await auth.signIn(resp);
-      naviation.navigate("MainTabs");
+      navigation.navigate("MainTabs");
     } catch (err) {
       logError(err, "Register Failed");
     }
@@ -77,7 +77,7 @@ const Register = (props: Props) => {
 
       <Button
         title="Login"
-        onPress={() => naviation.navigate("Login")}
+        onPress={() => navigation.navigate("Login")}
       ></Button>
     </View>
   );
