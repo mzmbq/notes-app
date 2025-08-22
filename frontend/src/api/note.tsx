@@ -2,11 +2,15 @@ import { Note } from "notes-app-types";
 import { log } from "../logger/logger";
 import { BACKEND_URL } from "./api";
 
+type FetchPaginatedNotesReq = {
+  token: string;
+  pageNum: number;
+};
+
 export const fetchPaginatedNotes = async (
-  token: string,
-  pageNum: number
+  req: FetchPaginatedNotesReq
 ): Promise<Note[]> => {
-  const url = `${BACKEND_URL}/notes/page/${pageNum}`;
+  const url = `${BACKEND_URL}/notes/page/${req.pageNum}`;
   log.debug("fetchPaginatedNotes: Sending GET request to:", url);
   try {
     const response = await fetch(url, {
@@ -14,7 +18,7 @@ export const fetchPaginatedNotes = async (
       headers: {
         "Content-Type": "application/json",
         // TODO: Improve token handling
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${req.token}`,
       },
     });
 
