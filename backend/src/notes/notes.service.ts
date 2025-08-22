@@ -40,6 +40,33 @@ export class NotesService {
     throw new Error("[createNote] Failed creating a note (Unknown error)");
   }
 
+  async getPaginatedNotes(user: CurrentUser, page: number): Promise<Note[]> {
+    // await new Promise((f) => setTimeout(f, 2000));
+    try {
+      const pageSize = 20;
+      const offset = page * pageSize;
+
+      const foundNotes = await db
+        .select()
+        .from(notes)
+        .where(eq(notes.authorId, user.userId))
+        .limit(pageSize)
+        .offset(offset)
+        .orderBy(notes.updatedAt);
+
+      return foundNotes;
+    } catch (err) {
+      this.logger.error(
+        `[getNotes] Failed getting notes for user ${user.userId} on page ${page}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+
+      throw new InternalServerErrorException(
+        `[getNotes] Failed getting notes for page ${page}`,
+      );
+    }
+  }
+
   async getNoteById(currentUser: CurrentUser, id: string): Promise<Note> {
     if (!isUUID(id)) {
       throw new BadRequestException(
