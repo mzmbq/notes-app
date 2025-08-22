@@ -1,11 +1,9 @@
+import type { AuthResp } from "./login.js";
+
 export type SignUpReq = {
   email: string;
   username: string;
   password: string;
 };
 
-export type SignUpResp = {
-  id: string;
-  username: string;
-  token: string;
-};
+export type SignUpResp = AuthResp;

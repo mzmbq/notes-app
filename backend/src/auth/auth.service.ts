@@ -50,9 +50,9 @@ export class AuthService {
     });
 
     return {
-      id: user.id,
+      accessToken: authResult.accessToken,
+      userId: user.id,
       username: user.username,
-      token: authResult.accessToken,
     };
   }
 }
