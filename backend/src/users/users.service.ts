@@ -19,6 +19,7 @@ import { DatabaseError } from "pg";
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+
   async createUser(dto: CreateUserDto): Promise<User> {
     try {
       const user = await db
@@ -31,7 +32,7 @@ export class UsersService {
         .returning();
       return user[0];
     } catch (err) {
-      const dbErr = err.cause;
+      const dbErr = err instanceof Error && err.cause ? err.cause : undefined;
       if (dbErr instanceof DatabaseError) {
         if (dbErr.constraint === "user_email_unique") {
           this.logger.error(
@@ -109,7 +110,7 @@ export class UsersService {
         })
         .where(eq(users.id, id));
     } catch (err) {
-      const dbErr = err.cause;
+      const dbErr = err instanceof Error && err.cause ? err.cause : undefined;
       if (dbErr instanceof DatabaseError) {
         if (dbErr.constraint === "user_email_unique") {
           this.logger.error(

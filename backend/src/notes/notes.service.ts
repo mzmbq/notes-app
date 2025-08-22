@@ -130,9 +130,12 @@ export class NotesService {
         .returning();
       return updated;
     } catch (err) {
-      this.logger.error(`[updateNote] Failed updating note ${id}`, {
-        cause: err,
-      });
+      // Tempory fix for error handling. Will be handled by exception filter later
+      if (err instanceof Error) {
+        this.logger.error(`[updateNote] Failed updating note ${id}`, {
+          cause: err,
+        });
+      }
       throw new InternalServerErrorException(
         "[updateNote] Failed updating note",
       );
@@ -147,7 +150,9 @@ export class NotesService {
         .where(eq(notes.id, id))
         .returning({ id: notes.id });
     } catch (err) {
-      this.logger.error(`Failed deleting note with id ${id}`, { cause: err });
+      if (err instanceof Error) {
+        this.logger.error(`Failed deleting note with id ${id}`, { cause: err });
+      }
       throw new InternalServerErrorException(
         "[deleteNote] Failed deleting note",
       );
