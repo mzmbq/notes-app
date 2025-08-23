@@ -1,7 +1,4 @@
 {
-  "dependencies": {
-    "@nestjs/mapped-types": "*"
-  },
   "private": true,
   "workspaces": [
     "backend",
