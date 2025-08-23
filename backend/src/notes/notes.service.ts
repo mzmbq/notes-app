@@ -181,7 +181,7 @@ export class NotesService {
         this.logger.error(`Failed deleting note with id ${id}`, { cause: err });
       }
       throw new InternalServerErrorException(
-        "[deleteNote] Failed deleting note",
+        "[deleteNoteById] Failed deleting note",
       );
     }
   }
