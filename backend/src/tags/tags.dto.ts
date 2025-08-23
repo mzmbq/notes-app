@@ -1,8 +1,17 @@
-import { IsHexColor, IsOptional, IsString, MaxLength } from "class-validator";
+import { Transform } from "class-transformer";
+import {
+  IsHexColor,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from "class-validator";
 
 class CreateTagDto {
   @IsString()
-  @MaxLength(50, { message: "Tag must be less then 50 chars" })
+  @MinLength(1, { message: "Title must be at least 1 char" })
+  @MaxLength(20, { message: "Tag must be less then 20 chars" })
+  @Transform(({ value }: { value: string }) => value.trim())
   title: string;
 
   @IsString()
@@ -17,7 +26,9 @@ class CreateTagDto {
 class UpdateTagDto {
   @IsString()
   @IsOptional()
-  @MaxLength(50, { message: "Tag must be less then 50 chars" })
+  @MinLength(1, { message: "Title must be at least 1 char" })
+  @MaxLength(20, { message: "Tag must be less then 20 chars" })
+  @Transform(({ value }: { value: string }) => value.trim())
   title?: string;
 
   @IsString()

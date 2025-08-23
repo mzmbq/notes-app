@@ -19,17 +19,23 @@ type Props = {
 const NoteCard = (props: Props) => {
   const tags: Tag[] = [
     {
-      color: "#ff00ff",
+      authorId: "aaa",
+      backgroundColor: "#ff00ff",
+      textColor: "#ffffff",
       id: "1231",
       title: "tag1",
     },
     {
-      color: "#00ffff",
+      authorId: "aaa",
+      backgroundColor: "#00ffff",
+      textColor: "#ffffff",
       id: "123",
       title: "tag2",
     },
     {
-      color: "#00ff00",
+      authorId: "aaa",
+      backgroundColor: "#00ff00",
+      textColor: "#ffffff",
       id: "1232",
       title: "tag3",
     },

@@ -1,47 +1,45 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
   Logger,
-  InternalServerErrorException,
   ForbiddenException,
 } from "@nestjs/common";
 import { CreateNoteDto, UpdateNoteDto } from "./notes.dto";
 import { notes } from "src/db/note";
 import { db } from "src/database/db";
 import { eq, and } from "drizzle-orm";
-import { isUUID } from "class-validator";
 import { CurrentUser } from "notes-app-types";
 import { Note } from "notes-app-types";
+import { DatabaseError } from "pg";
 
 @Injectable()
 export class NotesService {
   private readonly logger = new Logger(NotesService.name);
+
   async createNote(user: CurrentUser, dto: CreateNoteDto): Promise<Note> {
-    let title = dto.title;
-    if (!title) {
-      title = "New note";
-    }
+    // TODO: rename note if title already exists for this user
     try {
       const note = await db
         .insert(notes)
         .values({
-          title: title.trim(),
-          content: dto.content.trim(),
+          title: dto.title,
+          content: dto.content,
           authorId: user.userId,
         })
         .returning();
       return note[0];
     } catch (err) {
-      if (err instanceof Error) {
-        throw new Error("[createNote] Failed creating a note", err);
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[createNote] Unhandled DB error: ${err.constraint}`, {
+          cause: err,
+        });
       }
+      throw err;
     }
-    throw new Error("[createNote] Failed creating a note (Unknown error)");
   }
 
   async getPaginatedNotes(user: CurrentUser, page: number): Promise<Note[]> {
-    // await new Promise((f) => setTimeout(f, 2000));
     try {
       const pageSize = 20;
       const offset = page * pageSize;
@@ -56,37 +54,44 @@ export class NotesService {
 
       return foundNotes;
     } catch (err) {
-      this.logger.error(
-        `[getNotes] Failed getting notes for user ${user.userId} on page ${page}`,
-        err instanceof Error ? err.stack : String(err),
-      );
-
-      throw new InternalServerErrorException(
-        `[getNotes] Failed getting notes for page ${page}`,
-      );
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(
+          `[getPaginatedNotes] Unhandled DB error: ${err.constraint}`,
+          {
+            cause: err,
+          },
+        );
+      }
+      throw err;
     }
   }
 
   async getNoteById(currentUser: CurrentUser, id: string): Promise<Note> {
-    if (!isUUID(id)) {
-      throw new BadRequestException(
-        `[getNoteById] Invalid note ID format: "${id}"`,
-      );
+    try {
+      const result = await db.select().from(notes).where(eq(notes.id, id));
+      const note = result[0];
+      if (!note) {
+        throw new NotFoundException(`Note with ID "${id}" not found`);
+      }
+      if (currentUser.userId !== note.authorId) {
+        throw new ForbiddenException(
+          "You can't get/update/delete another user's note",
+        );
+      }
+      return note;
+    } catch (err) {
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(
+          `[getNoteById] Unhandled DB error: ${err.constraint}`,
+          {
+            cause: err,
+          },
+        );
+      }
+      throw err;
     }
-    const result = await db.select().from(notes).where(eq(notes.id, id));
-    const note = result[0];
-    if (!note) {
-      this.logger.error(`[getNoteById] Note with ID "${id}" not found`);
-      throw new NotFoundException(
-        `[getNoteById] Note with ID "${id}" not found`,
-      );
-    }
-    if (currentUser.userId !== note.authorId) {
-      throw new ForbiddenException(
-        "You can't get / update / delete another user's note",
-      );
-    }
-    return note;
   }
 
   async getAllFavoriteNotes(user: CurrentUser): Promise<Note[]> {
@@ -99,18 +104,16 @@ export class NotesService {
         );
       return foundNotes;
     } catch (err) {
-      if (err instanceof Error) {
-        this.logger.error(
-          `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : ${user.userId}`,
-          { cause: err },
-        );
-        throw new Error(
-          `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : ${user.userId}, `,
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(
+          `[getAllFavoriteNotes] Unhandled DB error: ${err.constraint}`,
+          {
+            cause: err,
+          },
         );
       }
-      throw new Error(
-        `[getAllFavoriteNotes] Failed getting all favorite notes of user with id : ${user.userId} (Unknown Error)`,
-      );
+      throw err;
     }
   }
 
@@ -122,19 +125,16 @@ export class NotesService {
         .where(eq(notes.authorId, user.userId));
       return foundNotes;
     } catch (err) {
-      if (err instanceof Error) {
-        this.logger.error(
-          `[getAllNotesOfUser] Failed getting all favorite notes of user with id : ${user.userId}`,
-          { cause: err },
-        );
-        throw new Error(
-          `[getAllNotesOfUser] Failed getting all favorite notes of user with id : ${user.userId}}, `,
-          err,
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(
+          `[getAllNotes] Unhandled DB error: ${err.constraint}`,
+          {
+            cause: err,
+          },
         );
       }
-      throw new Error(
-        `[getAllNotesOfUser] Failed getting all favorite notes of user with id : ${user.userId} (Unknown Error)`,
-      );
+      throw err;
     }
   }
 
@@ -143,13 +143,14 @@ export class NotesService {
     id: string,
     dto: UpdateNoteDto,
   ): Promise<Note> {
+    // ? Is there a better way to do this?
     await this.getNoteById(currentUser, id);
     try {
       const [updated] = await db
         .update(notes)
         .set({
-          title: dto.title?.trim(),
-          content: dto.content?.trim(),
+          title: dto.title,
+          content: dto.content,
           isFavorite: dto.isFavorite,
           updatedAt: new Date(),
         })
@@ -157,19 +158,18 @@ export class NotesService {
         .returning();
       return updated;
     } catch (err) {
-      // Tempory fix for error handling. Will be handled by exception filter later
-      if (err instanceof Error) {
-        this.logger.error(`[updateNote] Failed updating note ${id}`, {
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[updateNote] Unhandled DB error: ${err.constraint}`, {
           cause: err,
         });
       }
-      throw new InternalServerErrorException(
-        "[updateNote] Failed updating note",
-      );
+      throw err;
     }
   }
 
   async deleteNoteById(currentUser: CurrentUser, id: string): Promise<void> {
+    // ? Is there a better way to do this?
     await this.getNoteById(currentUser, id);
     try {
       await db
@@ -177,12 +177,16 @@ export class NotesService {
         .where(eq(notes.id, id))
         .returning({ id: notes.id });
     } catch (err) {
-      if (err instanceof Error) {
-        this.logger.error(`Failed deleting note with id ${id}`, { cause: err });
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(
+          `[deleteNoteById] Unhandled DB error: ${err.constraint}`,
+          {
+            cause: err,
+          },
+        );
       }
-      throw new InternalServerErrorException(
-        "[deleteNoteById] Failed deleting note",
-      );
+      throw err;
     }
   }
 }

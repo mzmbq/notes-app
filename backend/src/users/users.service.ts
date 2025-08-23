@@ -1,9 +1,7 @@
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
@@ -12,7 +10,6 @@ import { CurrentUser, User } from "notes-app-types";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
 import { eq } from "drizzle-orm";
 import { db } from "src/database/db";
-import { isUUID } from "class-validator";
 import { hashPassword } from "src/util/passwordHelpers";
 import { DatabaseError } from "pg";
 
@@ -32,62 +29,59 @@ export class UsersService {
         .returning();
       return user[0];
     } catch (err) {
-      const dbErr = err instanceof Error && err.cause ? err.cause : undefined;
-      if (dbErr instanceof DatabaseError) {
-        if (dbErr.constraint === "user_email_unique") {
-          this.logger.error(
-            `[createUser] Failed creating user. User with email: ${dto.email} already exists`,
-            { dbErr },
-          );
-          throw new ConflictException(
-            `[createUser] Failed creating user. User with email: ${dto.email} already exists`,
-          );
+      if (err instanceof DatabaseError) {
+        if (err.constraint === "user_email_unique") {
+          throw new ConflictException(`This email is already taken`);
         }
-        if (dbErr.constraint === "user_username_unique") {
-          this.logger.error(
-            `[createUser] Failed creating user. User with username: ${dto.username} already exists`,
-            { dbErr },
-          );
-          throw new ConflictException(
-            `[createUser] Failed creating user. User with username: ${dto.username} already exists`,
-          );
+        if (err.constraint === "user_username_unique") {
+          throw new ConflictException(`This username is already taken`);
         }
       }
-      throw new InternalServerErrorException(
-        "[createUser] Failed creating user",
-      );
+      throw err;
     }
   }
 
   async getUserById(id: string): Promise<User> {
-    if (!isUUID(id)) {
-      throw new BadRequestException(
-        `[getUserById] Invalid user ID format: "${id}"`,
-      );
+    try {
+      const result = await db.select().from(users).where(eq(users.id, id));
+      const user = result[0];
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      return user;
+    } catch (err) {
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[] Unhandled DB error: ${err.constraint}`, {
+          cause: err,
+        });
+      }
+      throw err;
     }
-    const result = await db.select().from(users).where(eq(users.id, id));
-    const user = result[0];
-    if (!user) {
-      this.logger.error(`[getUserById] User with ID "${id}" not found`);
-      throw new NotFoundException(
-        `[getUserById] User with ID "${id}" not found`,
-      );
-    }
-    return user;
   }
 
   async getUserByUsername(username: string): Promise<User> {
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.username, username));
-    const user = result[0];
-    if (!user) {
-      throw new NotFoundException(
-        `[getUserByUsername] User with username "${username}" not found`,
-      );
+    try {
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, username));
+      const user = result[0];
+      if (!user) {
+        throw new NotFoundException(
+          `User with username "${username}" not found`,
+        );
+      }
+      return user;
+    } catch (err) {
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[] Unhandled DB error: ${err.constraint}`, {
+          cause: err,
+        });
+      }
+      throw err;
     }
-    return user;
   }
 
   async updateUser(
@@ -110,28 +104,19 @@ export class UsersService {
         })
         .where(eq(users.id, id));
     } catch (err) {
-      const dbErr = err instanceof Error && err.cause ? err.cause : undefined;
-      if (dbErr instanceof DatabaseError) {
-        if (dbErr.constraint === "user_email_unique") {
-          this.logger.error(
-            `[updateUser] Failed updating user. User with email: ${dto.email} already exists`,
-            { dbErr },
-          );
+      if (err instanceof DatabaseError) {
+        if (err.constraint === "user_email_unique") {
           throw new ConflictException(
-            `[updateUser] Failed updating user. User with email: ${dto.email} already exists`,
+            "Failed updating user. This email is already taken",
           );
         }
-        if (dbErr.constraint === "user_username_unique") {
-          this.logger.error(
-            `[updateUser] Failed updating user. User with username: ${dto.username} already exists`,
-            { dbErr },
-          );
+        if (err.constraint === "user_username_unique") {
           throw new ConflictException(
-            `[updateUser] Failed updating user. User with username: ${dto.username} already exists`,
+            "Failed updating user. This username is already taken",
           );
         }
       }
-      throw new Error("[updateUser] Failed updating user", { cause: err });
+      throw err;
     }
     return this.getUserById(id);
   }

@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -57,7 +58,7 @@ export class NotesController {
   @Get(":id")
   async getNoteById(
     @CurrentUserDecorator() user: CurrentUser,
-    @Param("id") id: string,
+    @Param("id", ParseUUIDPipe) id: string,
   ): Promise<Note> {
     return this.notesService.getNoteById(user, id);
   }
@@ -66,7 +67,7 @@ export class NotesController {
   @Patch(":id")
   async updateNote(
     @CurrentUserDecorator() user: CurrentUser,
-    @Param("id") id: string,
+    @Param("id", ParseUUIDPipe) id: string,
     @Body() dto: UpdateNoteDto,
   ): Promise<Note> {
     return this.notesService.updateNote(user, id, dto);
@@ -76,7 +77,7 @@ export class NotesController {
   @Delete(":id")
   async deleteNoteById(
     @CurrentUserDecorator() user: CurrentUser,
-    @Param("id") id: string,
+    @Param("id", ParseUUIDPipe) id: string,
   ): Promise<void> {
     return this.notesService.deleteNoteById(user, id);
   }

@@ -11,7 +11,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(input: AuthReq): Promise<SignInData> {
+  async verifyCredentials(input: AuthReq): Promise<SignInData> {
     const user = await this.usersService.getUserByUsername(input.username);
     if (user && (await isCorrectPassword(input.password, user.passwordHash))) {
       return {
@@ -19,18 +19,15 @@ export class AuthService {
         username: user.username,
       };
     }
-    throw new Error("validate user failed");
+    throw new UnauthorizedException("Invalid username or password");
   }
 
-  async authenticate(input: AuthReq): Promise<AuthResp> {
-    const user = await this.validateUser(input);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    return this.signIn(user);
+  async login(input: AuthReq): Promise<AuthResp> {
+    const user = await this.verifyCredentials(input);
+    return this.generateAuthToken(user);
   }
 
-  async signIn(user: SignInData): Promise<AuthResp> {
+  async generateAuthToken(user: SignInData): Promise<AuthResp> {
     const tokenPayload = {
       sub: user.userId,
       username: user.username,
@@ -44,7 +41,7 @@ export class AuthService {
   async signup(input: CreateUserDto): Promise<SignUpResp> {
     const user = await this.usersService.createUser(input);
 
-    const authResult = await this.signIn({
+    const authResult = await this.generateAuthToken({
       userId: user.id,
       username: user.username,
     });

@@ -1,17 +1,11 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { db } from "src/database/db";
 import { tags } from "src/db/tag";
 import { CurrentUser, Tag } from "notes-app-types";
 import { NotesService } from "src/notes/notes.service";
 import { eq, and } from "drizzle-orm";
-import { isUUID } from "class-validator";
 import { CreateTagDto, UpdateTagDto } from "./tags.dto";
+import { DatabaseError } from "pg";
 
 @Injectable()
 export class TagsService {
@@ -31,10 +25,13 @@ export class TagsService {
         .returning();
       return tag[0];
     } catch (err) {
-      if (err instanceof Error) {
-        throw new Error("[createTag] Failed creating a tag", err);
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[createTag] Unhandled DB error: ${err.constraint}`, {
+          cause: err,
+        });
       }
-      throw new Error("[createTag] Failed creating a tag (Unknown error)");
+      throw err;
     }
   }
 
@@ -46,50 +43,69 @@ export class TagsService {
         .where(eq(tags.authorId, user.userId));
       return foundTags;
     } catch (err) {
-      if (err instanceof Error) {
-        throw new Error(
-          `[getAllTags] Failed getting all tags of user with id : ${user.userId}}, `,
-          err,
-        );
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[getAllTags] Unhandled DB error: ${err.constraint}`, {
+          cause: err,
+        });
       }
-      throw new Error(
-        `[getAllTags] Failed getting all tags of user with id : ${user.userId} (Unknown Error)`,
-      );
+      throw err;
     }
   }
 
   async getTagById(user: CurrentUser, id: string): Promise<Tag> {
-    if (!isUUID(id)) {
-      throw new BadRequestException(
-        `[getTagById] Invalid tag ID format: "${id}"`,
-      );
+    try {
+      const result = await db
+        .select()
+        .from(tags)
+        .where(and(eq(tags.id, id), eq(tags.authorId, user.userId)));
+      const tag = result[0];
+      if (!tag) {
+        throw new NotFoundException(
+          `[getTagById] Tag with ID "${id}" not found`,
+        );
+      }
+      return tag;
+    } catch (err) {
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[getTagById] Unhandled DB error: ${err.constraint}`, {
+          cause: err,
+        });
+      }
+      throw err;
     }
-    const result = await db
-      .select()
-      .from(tags)
-      .where(and(eq(tags.id, id), eq(tags.authorId, user.userId)));
-    const tag = result[0];
-    if (!tag) {
-      throw new NotFoundException(`[getTagById] Tag with ID "${id}" not found`);
-    }
-    return tag;
   }
 
   async getTagByTitle(user: CurrentUser, title: string): Promise<Tag> {
-    const result = await db
-      .select()
-      .from(tags)
-      .where(and(eq(tags.title, title), eq(tags.authorId, user.userId)));
-    const tag = result[0];
-    if (!tag) {
-      throw new NotFoundException(
-        `[getTagById] Tag with Title "${title}" not found`,
-      );
+    try {
+      const result = await db
+        .select()
+        .from(tags)
+        .where(and(eq(tags.title, title), eq(tags.authorId, user.userId)));
+      const tag = result[0];
+      if (!tag) {
+        throw new NotFoundException(
+          `[getTagByTitle] Tag with Title "${title}" not found`,
+        );
+      }
+      return tag;
+    } catch (err) {
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(
+          `[getTagByTitle] Unhandled DB error: ${err.constraint}`,
+          {
+            cause: err,
+          },
+        );
+      }
+      throw err;
     }
-    return tag;
   }
 
   async updateTag(user: CurrentUser, id: string, dto: UpdateTagDto) {
+    // ? Is there a better way to do this?
     await this.getTagById(user, id);
     try {
       const [updated] = await db
@@ -104,21 +120,18 @@ export class TagsService {
       }
       return updated;
     } catch (err) {
-      if (
-        err instanceof NotFoundException ||
-        err instanceof BadRequestException
-      ) {
-        throw err;
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(`[updateTag] Unhandled DB error: ${err.constraint}`, {
+          cause: err,
+        });
       }
-      this.logger.error(
-        `[updateTag] Failed updating tag ${id}`,
-        err instanceof Error ? err.stack : String(err),
-      );
-      throw new InternalServerErrorException("[updateTag] Failed updating tag");
+      throw err;
     }
   }
 
   async deleteTagById(user: CurrentUser, id: string): Promise<void> {
+    // ? Is there a better way to do this?
     await this.getTagById(user, id);
     try {
       const deleted = await db
@@ -129,15 +142,16 @@ export class TagsService {
         throw new NotFoundException(`Tag with id ${id} not found`);
       }
     } catch (err) {
-      if (err instanceof NotFoundException) throw err;
-
-      this.logger.error(
-        `[deleteTagById] Failed deleting tag with id ${id}`,
-        err instanceof Error ? err.stack : String(err),
-      );
-      throw new InternalServerErrorException(
-        "[deleteTagById] Failed deleting tag",
-      );
+      if (err instanceof DatabaseError) {
+        // TODO: handle specific DB errors
+        this.logger.warn(
+          `[deleteTagById] Unhandled DB error: ${err.constraint}`,
+          {
+            cause: err,
+          },
+        );
+      }
+      throw err;
     }
   }
 }
