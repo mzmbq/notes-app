@@ -32,9 +32,9 @@ export class TagsService {
       return tag[0];
     } catch (err) {
       if (err instanceof Error) {
-        throw new Error("[createNote] Failed creating a note", err);
+        throw new Error("[createTag] Failed creating a tag", err);
       }
-      throw new Error("[createNote] Failed creating a note (Unknown error)");
+      throw new Error("[createTag] Failed creating a tag (Unknown error)");
     }
   }
 
@@ -111,12 +111,10 @@ export class TagsService {
         throw err;
       }
       this.logger.error(
-        `[updateNote] Failed updating note ${id}`,
+        `[updateTag] Failed updating tag ${id}`,
         err instanceof Error ? err.stack : String(err),
       );
-      throw new InternalServerErrorException(
-        "[updateNote] Failed updating note",
-      );
+      throw new InternalServerErrorException("[updateTag] Failed updating tag");
     }
   }
 
@@ -134,7 +132,7 @@ export class TagsService {
       if (err instanceof NotFoundException) throw err;
 
       this.logger.error(
-        `Failed deleting tag with id ${id}`,
+        `[deleteTagById] Failed deleting tag with id ${id}`,
         err instanceof Error ? err.stack : String(err),
       );
       throw new InternalServerErrorException(
