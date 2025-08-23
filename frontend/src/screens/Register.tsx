@@ -7,11 +7,13 @@ import { fetchSignUp } from "../api/user";
 import TextInput from "../components/TextInput";
 import { logError } from "../utils/errors";
 import { log } from "../logger/logger";
+import { useAuth } from "../hooks/useAuth";
+import { SignUpReq, SignUpResp } from "notes-app-types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Register">;
 
 const Register = (props: Props) => {
-  const naviation = props.navigation;
+  const navigation = props.navigation;
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +24,7 @@ const Register = (props: Props) => {
     error,
     doFetch: register,
   } = useFetchBackend(fetchSignUp);
+  const auth = useAuth();
 
   const handleRegister = async () => {
     if (password != passwordRepeat) {
@@ -29,12 +32,14 @@ const Register = (props: Props) => {
       return;
     }
     try {
-      const resp = await register({
+      const resp: SignUpResp = await register({
         username: username,
         email: email,
         password: password,
       });
-      log.info("Created a new user:", resp.id);
+      log.info("Created a new user:", resp.userId);
+      await auth.signIn(resp);
+      navigation.navigate("MainTabs");
     } catch (err) {
       logError(err, "Register Failed");
     }
@@ -65,14 +70,14 @@ const Register = (props: Props) => {
         <Text className="text-red-600">{error}</Text>
         {signUpResponse && (
           <Text className="text-green-500">
-            Created a new user: {signUpResponse.id}
+            Created a new user: {signUpResponse.userId}
           </Text>
         )}
       </View>
 
       <Button
         title="Login"
-        onPress={() => naviation.navigate("Login")}
+        onPress={() => navigation.navigate("Login")}
       ></Button>
     </View>
   );

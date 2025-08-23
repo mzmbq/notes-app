@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UseGuards,
@@ -26,6 +27,16 @@ export class NotesController {
   ): Promise<Note> {
     return this.notesService.createNote(user, dto);
   }
+
+  @Get("/page/:num")
+  @UseGuards(AuthGuard)
+  async getNotes(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("num", ParseIntPipe) num: number,
+  ): Promise<Note[]> {
+    return this.notesService.getPaginatedNotes(user, num);
+  }
+
   @UseGuards(AuthGuard)
   @Get("/all")
   async getAllNotes(
