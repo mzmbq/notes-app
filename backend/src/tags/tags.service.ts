@@ -1,12 +1,18 @@
-import { Injectable, Logger } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateTagDto } from "./dto/create-tag.dto";
 import { UpdateTagDto } from "./dto/update-tag.dto";
 import { db } from "src/database/db";
 import { tags } from "src/db/tag";
-import { Tag } from "./entities/tag.entity";
-import { CurrentUser } from "notes-app-types";
+import { CurrentUser, Tag } from "notes-app-types";
 import { NotesService } from "src/notes/notes.service";
 import { eq, and } from "drizzle-orm";
+import { isUUID } from "class-validator";
 
 @Injectable()
 export class TagsService {
@@ -18,10 +24,10 @@ export class TagsService {
       const tag = await db
         .insert(tags)
         .values({
-          authorId: user.userId,
-          name: dto.name,
+          title: dto.title,
           textColor: dto.textColor,
           backgroundColor: dto.backgroundColor,
+          authorId: user.userId,
         })
         .returning();
       return tag[0];
@@ -53,15 +59,86 @@ export class TagsService {
     }
   }
 
-  getTagById(id: number) {
-    return `This action returns a #${id} tag`;
+  async getTagById(user: CurrentUser, id: string): Promise<Tag> {
+    if (!isUUID(id)) {
+      throw new BadRequestException(
+        `[getTagById] Invalid tag ID format: "${id}"`,
+      );
+    }
+    const result = await db
+      .select()
+      .from(tags)
+      .where(and(eq(tags.id, id), eq(tags.authorId, user.userId)));
+    const tag = result[0];
+    if (!tag) {
+      throw new NotFoundException(`[getTagById] Tag with ID "${id}" not found`);
+    }
+    return tag;
   }
 
-  updateTag(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
+  async getTagByTitle(user: CurrentUser, title: string): Promise<Tag> {
+    const result = await db
+      .select()
+      .from(tags)
+      .where(and(eq(tags.title, title), eq(tags.authorId, user.userId)));
+    const tag = result[0];
+    if (!tag) {
+      throw new NotFoundException(
+        `[getTagById] Tag with Title "${title}" not found`,
+      );
+    }
+    return tag;
   }
 
-  deleteTag(id: number) {
-    return `This action removes a #${id} tag`;
+  async updateTag(user: CurrentUser, id: string, dto: UpdateTagDto) {
+    try {
+      const [updated] = await db
+        .update(tags)
+        .set({ ...dto })
+        .where(and(eq(tags.id, id), eq(tags.authorId, user.userId)))
+        .returning();
+      if (!updated) {
+        throw new NotFoundException(
+          `[updateTag] Failed updating tag. Tag with id ${id} not found`,
+        );
+      }
+      return updated;
+    } catch (err) {
+      if (
+        err instanceof NotFoundException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      }
+      this.logger.error(
+        `[updateNote] Failed updating note ${id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      throw new InternalServerErrorException(
+        "[updateNote] Failed updating note",
+      );
+    }
+  }
+
+  async deleteTagById(id: string): Promise<void> {
+    try {
+      const deleted = await db
+        .delete(tags)
+        .where(eq(tags.id, id))
+        .returning({ id: tags.id });
+      if (deleted.length === 0) {
+        throw new NotFoundException(`Tag with id ${id} not found`);
+      }
+    } catch (err) {
+      if (err instanceof NotFoundException) throw err;
+
+      this.logger.error(
+        `Failed deleting tag with id ${id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      throw new InternalServerErrorException(
+        "[deleteTagById] Failed deleting tag",
+      );
+    }
   }
 }

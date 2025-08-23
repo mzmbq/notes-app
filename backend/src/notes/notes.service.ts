@@ -140,7 +140,7 @@ export class NotesService {
         err instanceof Error ? err.stack : String(err),
       );
       throw new InternalServerErrorException(
-        "[deleteNote] Failed deleting note",
+        "[deleteNoteById] Failed deleting note",
       );
     }
   }

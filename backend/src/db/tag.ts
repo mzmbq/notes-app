@@ -3,7 +3,7 @@ import { users } from "./user";
 
 export const tags = pgTable("tag", {
   id: uuid("id").defaultRandom().primaryKey(),
-  name: varchar("name").notNull(),
+  title: varchar("title").notNull(),
   textColor: varchar("text_color").notNull(),
   authorId: uuid("author_id")
     .notNull()
