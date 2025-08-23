@@ -1,25 +1,29 @@
-import { IsBoolean, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsOptional, IsString, MaxLength } from "class-validator";
 
 class CreateNoteDto {
   @IsString()
+  @MaxLength(100, { message: "Title must be less than 100 chars" })
   title: string;
 
   @IsString()
+  @MaxLength(2000, { message: "Content must be less than 2000 chars" })
   content: string;
 }
 
 class UpdateNoteDto {
   @IsString()
   @IsOptional()
-  title: string;
+  @MaxLength(100, { message: "Title must be less than 100 chars" })
+  title?: string;
 
   @IsString()
   @IsOptional()
-  content: string;
+  @MaxLength(2000, { message: "Content must be less than 2000 chars" })
+  content?: string;
 
   @IsBoolean()
   @IsOptional()
-  isFavorite: boolean;
+  isFavorite?: boolean;
 }
 
 export { CreateNoteDto, UpdateNoteDto };

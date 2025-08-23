@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
-import { User } from "notes-app-types";
+import type { User, CurrentUser } from "notes-app-types";
+import { AuthGuard } from "src/auth/guards/auth.guard";
+import { CurrentUser as CurrentUserDecorator } from "src/common/decorators/current-user.decorator";
 
 @Controller({ path: "user" })
 export class UsersController {
@@ -13,15 +23,18 @@ export class UsersController {
   }
 
   @Get(":id")
+  @UseGuards(AuthGuard)
   async getUserById(@Param("id") id: string): Promise<User> {
     return this.usersService.getUserById(id);
   }
 
   @Patch(":id")
+  @UseGuards(AuthGuard)
   async updateUser(
     @Param("id") id: string,
+    @CurrentUserDecorator() user: CurrentUser,
     @Body() dto: UpdateUserDto,
   ): Promise<User> {
-    return this.usersService.updateUser(id, dto);
+    return this.usersService.updateUser(user, id, dto);
   }
 }

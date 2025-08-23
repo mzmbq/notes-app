@@ -4,8 +4,8 @@ import {
   AuthReq,
   AuthResp,
   User,
-  SignUpResp,
   SignUpReq,
+  SignUpResp,
 } from "notes-app-types";
 
 export const fetchLogin = async (req: AuthReq): Promise<AuthResp> => {

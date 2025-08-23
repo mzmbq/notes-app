@@ -18,6 +18,7 @@ import Shared from "./Shared";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./Login";
 import Register from "./Register";
+import Editor from "./Editor";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -41,6 +42,22 @@ const Routes = () => {
   );
 };
 
+export type HomeStackParamList = {
+  Home: undefined;
+  Editor: { noteId?: string };
+};
+
+const HomeStack = createNativeStackNavigator<HomeStackParamList>();
+
+const HomeStackScreen = () => {
+  return (
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStack.Screen name="Home" component={Home} />
+      <HomeStack.Screen name="Editor" component={Editor} />
+    </HomeStack.Navigator>
+  );
+};
+
 export type TabParamList = {
   Home: undefined;
   Settings: undefined;
@@ -60,7 +77,7 @@ const Tabs = () => {
     >
       <Tab.Screen
         name="Home"
-        component={Home}
+        component={HomeStackScreen}
         options={{
           title: "",
           tabBarIcon: createTabIcon(IconHome, IconHomeFilled),
