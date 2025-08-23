@@ -1,5 +1,5 @@
 {
-  "id": "5baa967f-fd8c-49b3-8437-2fbbcb1f341d",
+  "id": "a611c89b-5dfe-44e4-afcd-d8f31aaeefcc",
   "prevId": "a9f6daf9-bfa6-4a2b-9d3e-696327c33f57",
   "version": "7",
   "dialect": "postgresql",
@@ -88,8 +88,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
+        "title": {
+          "name": "title",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
@@ -97,6 +97,12 @@
         "text_color": {
           "name": "text_color",
           "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author_id": {
+          "name": "author_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -108,7 +114,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "tag_author_id_user_id_fk": {
+          "name": "tag_author_id_user_id_fk",
+          "tableFrom": "tag",
+          "tableTo": "user",
+          "columnsFrom": [
+            "author_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
