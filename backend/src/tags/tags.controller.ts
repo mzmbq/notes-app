@@ -9,11 +9,10 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { TagsService } from "./tags.service";
-import { CreateTagDto } from "./dto/create-tag.dto";
-import { UpdateTagDto } from "./dto/update-tag.dto";
 import { AuthGuard } from "src/auth/guards/auth.guard";
 import { CurrentUser as CurrentUserDecorator } from "src/common/decorators/current-user.decorator";
 import type { CurrentUser } from "notes-app-types";
+import { CreateTagDto, UpdateTagDto } from "./tags.dto";
 
 @Controller("tags")
 export class TagsController {

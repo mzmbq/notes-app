@@ -5,14 +5,13 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { CreateTagDto } from "./dto/create-tag.dto";
-import { UpdateTagDto } from "./dto/update-tag.dto";
 import { db } from "src/database/db";
 import { tags } from "src/db/tag";
 import { CurrentUser, Tag } from "notes-app-types";
 import { NotesService } from "src/notes/notes.service";
 import { eq, and } from "drizzle-orm";
 import { isUUID } from "class-validator";
+import { CreateTagDto, UpdateTagDto } from "./tags.dto";
 
 @Injectable()
 export class TagsService {
