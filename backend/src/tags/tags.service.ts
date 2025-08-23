@@ -90,6 +90,7 @@ export class TagsService {
   }
 
   async updateTag(user: CurrentUser, id: string, dto: UpdateTagDto) {
+    await this.getTagById(user, id);
     try {
       const [updated] = await db
         .update(tags)
@@ -119,7 +120,8 @@ export class TagsService {
     }
   }
 
-  async deleteTagById(id: string): Promise<void> {
+  async deleteTagById(user: CurrentUser, id: string): Promise<void> {
+    await this.getTagById(user, id);
     try {
       const deleted = await db
         .delete(tags)

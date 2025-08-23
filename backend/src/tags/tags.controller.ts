@@ -58,6 +58,6 @@ export class TagsController {
     @CurrentUserDecorator() user: CurrentUser,
     @Param("id") id: string,
   ) {
-    return this.tagsService.deleteTagById(id);
+    return this.tagsService.deleteTagById(user, id);
   }
 }
