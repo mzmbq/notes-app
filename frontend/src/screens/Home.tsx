@@ -1,4 +1,4 @@
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { HomeStackParamList, RootStackParamList, TabParamList } from "./Routes";
@@ -10,6 +10,7 @@ import { useAuth } from "../hooks/useAuth";
 import { log } from "../logger/logger";
 import { Note } from "notes-app-types";
 import useFetchBackend from "../hooks/useFetchBackend";
+import { IconCirclePlus } from "@tabler/icons-react-native";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Home">;
 
@@ -52,17 +53,21 @@ const Home = ({ navigation }: Props) => {
     }
   };
 
+  const handleDeleted = async (id: string) => {
+    setNotes((prev) => prev.filter((note) => note.id !== id));
+  };
+
   const renderItem = ({ item }: { item: Note }) => (
     <View className="px-4 py-2 w-full">
       <NoteCard
-        title={item.title}
-        content={item.content}
+        note={item}
         onPress={() =>
           navigation.navigate("Editor", {
-            noteId: item.id,
+            note: item,
           })
         }
         tags={[]}
+        onDeleted={handleDeleted}
       />
     </View>
   );
@@ -88,27 +93,36 @@ const Home = ({ navigation }: Props) => {
     </View>
   );
   return (
-    <View className="flex-1 items-center bg-gray-100 pt-4 w-full">
-      <Text className="text-xl font-bold text-blue-500">Home</Text>
-      {error && <Text className="text-red-600">{error}</Text>}
-      <FlatList
-        className="w-full"
-        data={notes}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={() => {
-          if (loading) {
-            return loadingMessage;
-          }
-          if (!hasMore && notes.length > 0) {
-            return noMoreNotesMessage;
-          }
-          return null;
-        }}
-        ListEmptyComponent={!loading && !error ? listEmptyMessage : null}
-      />
+    <View className="relative w-full h-full">
+      <View className="items-center bg-gray-100 pt-4 w-full">
+        <Text className="text-xl font-bold text-blue-500">Home</Text>
+        {error !== "" && <Text className="text-red-600">{error}</Text>}
+        <FlatList
+          className="w-full"
+          data={notes}
+          extraData={notes}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => {
+            if (loading) {
+              return loadingMessage;
+            }
+            if (!hasMore && notes.length > 0) {
+              return noMoreNotesMessage;
+            }
+            return null;
+          }}
+          ListEmptyComponent={!loading && !error ? listEmptyMessage : null}
+        />
+      </View>
+      <TouchableOpacity
+        className="absolute bottom-10 right-10"
+        onPress={() => navigation.navigate("Editor", {})}
+      >
+        <IconCirclePlus />
+      </TouchableOpacity>
     </View>
   );
 };

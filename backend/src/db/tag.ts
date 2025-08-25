@@ -7,6 +7,6 @@ export const tags = pgTable("tag", {
   textColor: varchar("text_color").notNull(),
   authorId: uuid("author_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   backgroundColor: varchar("background_color").notNull(),
 });

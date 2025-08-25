@@ -16,7 +16,7 @@ export const notes = pgTable("note", {
   isFavorite: boolean("is_favorite").notNull().default(false),
   authorId: uuid("author_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

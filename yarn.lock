@@ -6760,6 +6760,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:~14.1.5":
+  version: 14.1.5
+  resolution: "expo-blur@npm:14.1.5"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/4ffe9014219f23d53f66bc61ea5d00b74a012d120f94a810c71cbdd34901900282a40f7d0636877cd261bc7ff8a3db20da2e0be9393b1a950b8fc677e285bf65
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:~17.1.7":
   version: 17.1.7
   resolution: "expo-constants@npm:17.1.7"
@@ -10198,6 +10209,7 @@ __metadata:
     "@tabler/icons-react-native": "npm:^3.34.1"
     "@types/react": "npm:~19.0.10"
     expo: "npm:~53.0.20"
+    expo-blur: "npm:~14.1.5"
     expo-secure-store: "npm:~14.2.3"
     expo-status-bar: "npm:~2.2.3"
     nativewind: "npm:^4.1.23"

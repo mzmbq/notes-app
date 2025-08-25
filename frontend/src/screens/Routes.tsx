@@ -19,6 +19,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./Login";
 import Register from "./Register";
 import Editor from "./Editor";
+import { Note } from "notes-app-types";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -44,7 +45,7 @@ const Routes = () => {
 
 export type HomeStackParamList = {
   Home: undefined;
-  Editor: { noteId?: string };
+  Editor: { note?: Note };
 };
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();

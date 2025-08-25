@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ErrorToText } from "../utils/errors";
 import { log } from "../logger/logger";
+import { useAuth } from "./useAuth";
 
 export const useFetchBackend = <ReqT, ResT>(
   fetchMethod: (req: ReqT) => Promise<ResT>
@@ -13,6 +14,8 @@ export const useFetchBackend = <ReqT, ResT>(
   const [response, setResponse] = useState<ResT | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const auth = useAuth();
 
   const doFetch = async (req: ReqT): Promise<ResT> => {
     setLoading(true);
