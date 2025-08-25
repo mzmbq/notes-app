@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -24,14 +25,14 @@ export class UsersController {
 
   @Get(":id")
   @UseGuards(AuthGuard)
-  async getUserById(@Param("id") id: string): Promise<User> {
+  async getUserById(@Param("id", ParseUUIDPipe) id: string): Promise<User> {
     return this.usersService.getUserById(id);
   }
 
   @Patch(":id")
   @UseGuards(AuthGuard)
   async updateUser(
-    @Param("id") id: string,
+    @Param("id", ParseUUIDPipe) id: string,
     @CurrentUserDecorator() user: CurrentUser,
     @Body() dto: UpdateUserDto,
   ): Promise<User> {

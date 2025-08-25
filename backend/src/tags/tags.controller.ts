@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseUUIDPipe,
 } from "@nestjs/common";
 import { TagsService } from "./tags.service";
 import { AuthGuard } from "src/auth/guards/auth.guard";
@@ -37,7 +38,7 @@ export class TagsController {
   @UseGuards(AuthGuard)
   getTagById(
     @CurrentUserDecorator() user: CurrentUser,
-    @Param("id") id: string,
+    @Param("id", ParseUUIDPipe) id: string,
   ) {
     return this.tagsService.getTagById(user, id);
   }
@@ -46,7 +47,7 @@ export class TagsController {
   @UseGuards(AuthGuard)
   updateTag(
     @CurrentUserDecorator() user: CurrentUser,
-    @Param("id") id: string,
+    @Param("id", ParseUUIDPipe) id: string,
     @Body() updateTagDto: UpdateTagDto,
   ) {
     return this.tagsService.updateTag(user, id, updateTagDto);
@@ -56,7 +57,7 @@ export class TagsController {
   @Delete(":id")
   deleteTag(
     @CurrentUserDecorator() user: CurrentUser,
-    @Param("id") id: string,
+    @Param("id", ParseUUIDPipe) id: string,
   ) {
     return this.tagsService.deleteTagById(user, id);
   }

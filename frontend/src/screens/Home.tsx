@@ -90,7 +90,7 @@ const Home = ({ navigation }: Props) => {
   return (
     <View className="flex-1 items-center bg-gray-100 pt-4 w-full">
       <Text className="text-xl font-bold text-blue-500">Home</Text>
-      {error && <Text className="text-red-600">{error}</Text>}
+      {error !== "" && <Text className="text-red-600">{error}</Text>}
       <FlatList
         className="w-full"
         data={notes}

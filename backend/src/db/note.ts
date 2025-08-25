@@ -11,7 +11,7 @@ import { tags } from "./tag";
 
 export const notes = pgTable("note", {
   id: uuid("id").defaultRandom().primaryKey(),
-  title: varchar("title").notNull(),
+  title: varchar("title").unique().notNull(),
   content: varchar("content").notNull(),
   isFavorite: boolean("is_favorite").notNull().default(false),
   authorId: uuid("author_id")
