@@ -3682,6 +3682,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.debounce@npm:^4":
+  version: 4.0.9
+  resolution: "@types/lodash.debounce@npm:4.0.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 10c0/9fbb24e5e52616faf60ba5c82d8c6517f4b86fc6e9ab353b4c56c0760f63d9bf53af3f2d8f6c37efa48090359fb96dba1087d497758511f6c40677002191d042
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*, @types/lodash@npm:^4":
+  version: 4.17.20
+  resolution: "@types/lodash@npm:4.17.20"
+  checksum: 10c0/98cdd0faae22cbb8079a01a3bb65aa8f8c41143367486c1cbf5adc83f16c9272a2a5d2c1f541f61d0d73da543c16ee1d21cf2ef86cb93cd0cc0ac3bced6dd88f
+  languageName: node
+  linkType: hard
+
 "@types/methods@npm:^1.1.4":
   version: 1.1.4
   resolution: "@types/methods@npm:1.1.4"
@@ -10207,11 +10223,15 @@ __metadata:
     "@react-navigation/native": "npm:^7.1.17"
     "@react-navigation/native-stack": "npm:^7.3.24"
     "@tabler/icons-react-native": "npm:^3.34.1"
+    "@types/lodash": "npm:^4"
+    "@types/lodash.debounce": "npm:^4"
     "@types/react": "npm:~19.0.10"
     expo: "npm:~53.0.20"
     expo-blur: "npm:~14.1.5"
     expo-secure-store: "npm:~14.2.3"
     expo-status-bar: "npm:~2.2.3"
+    lodash: "npm:^4.17.21"
+    lodash.debounce: "npm:^4.0.8"
     nativewind: "npm:^4.1.23"
     notes-app-types: "workspace:*"
     prettier-plugin-tailwindcss: "npm:^0.5.11"

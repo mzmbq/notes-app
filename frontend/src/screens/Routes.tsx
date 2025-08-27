@@ -45,7 +45,7 @@ const Routes = () => {
 
 export type HomeStackParamList = {
   Home: undefined;
-  Editor: { note?: Note };
+  Editor: { note?: Note; updateNote: (note: Note) => void };
 };
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();

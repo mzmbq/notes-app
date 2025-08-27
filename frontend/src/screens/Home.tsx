@@ -5,7 +5,7 @@ import { HomeStackParamList, RootStackParamList, TabParamList } from "./Routes";
 import { CompositeScreenProps, useNavigation } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import NoteCard from "../components/NoteCard";
-import { fetchPaginatedNotes } from "../api/note";
+import { fetchPaginatedNotes, fetchUpdateNote } from "../api/note";
 import { useAuth } from "../hooks/useAuth";
 import { log } from "../logger/logger";
 import { Note } from "notes-app-types";
@@ -45,6 +45,7 @@ const Home = ({ navigation }: Props) => {
     if (newNotes.length === 0) {
       setHasMore(false);
     }
+    console.log("Notes fetched");
   };
 
   const handleLoadMore = () => {
@@ -57,6 +58,22 @@ const Home = ({ navigation }: Props) => {
     setNotes((prev) => prev.filter((note) => note.id !== id));
   };
 
+  const updateNote = (note: Note) => {
+    let isNewNote: boolean = true;
+    const newNotes = notes.map((e) => {
+      if (e.id === note.id) {
+        isNewNote = false;
+        return note;
+      } else {
+        return e;
+      }
+    });
+    if (isNewNote) {
+      newNotes.push(note);
+    }
+    setNotes(newNotes);
+  };
+
   const renderItem = ({ item }: { item: Note }) => (
     <View className="px-4 py-2 w-full">
       <NoteCard
@@ -64,6 +81,7 @@ const Home = ({ navigation }: Props) => {
         onPress={() =>
           navigation.navigate("Editor", {
             note: item,
+            updateNote: updateNote,
           })
         }
         tags={[]}
@@ -119,7 +137,9 @@ const Home = ({ navigation }: Props) => {
       </View>
       <TouchableOpacity
         className="absolute bottom-10 right-10"
-        onPress={() => navigation.navigate("Editor", {})}
+        onPress={() =>
+          navigation.navigate("Editor", { updateNote: updateNote })
+        }
       >
         <IconCirclePlus />
       </TouchableOpacity>
