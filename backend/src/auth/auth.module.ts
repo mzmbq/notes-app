@@ -3,9 +3,7 @@ import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { UsersModule } from "src/users/users.module";
 import { JwtModule } from "@nestjs/jwt";
-import * as dotenv from "dotenv";
 import { AuthGuard } from "./guards/auth.guard";
-dotenv.config();
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is not set in environment variables");
