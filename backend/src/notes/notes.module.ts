@@ -1,11 +1,12 @@
-import { db } from "src/database/db";
 import { NotesService } from "./notes.service";
 import { NotesController } from "./notes.controller";
 import { Module } from "@nestjs/common";
+import { DatabaseModule } from "src/database/database.module";
 
 @Module({
-  providers: [NotesService, { provide: "DB", useValue: db }],
+  providers: [NotesService],
   exports: [NotesService],
   controllers: [NotesController],
+  imports: [DatabaseModule],
 })
 export class NotesModule {}

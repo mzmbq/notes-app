@@ -1,20 +1,25 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { db } from "src/database/db";
+// import { db } from "src/database/db";
 import { tags } from "src/db/tag";
 import { CurrentUser, Tag } from "notes-app-types";
 import { NotesService } from "src/notes/notes.service";
 import { eq, and } from "drizzle-orm";
 import { CreateTagDto, UpdateTagDto } from "./tags.dto";
 import { DatabaseError } from "pg";
+import { DatabaseService } from "src/database/database.service";
 
 @Injectable()
 export class TagsService {
   private readonly logger = new Logger(TagsService.name);
-  constructor(private readonly notesService: NotesService) {}
+  constructor(
+    private readonly notesService: NotesService,
+    private readonly databaseService: DatabaseService,
+  ) {}
 
   async createTag(user: CurrentUser, dto: CreateTagDto): Promise<Tag> {
     try {
-      const tag = await db
+      const tag = await this.databaseService
+        .getDB()
         .insert(tags)
         .values({
           title: dto.title,
@@ -37,7 +42,8 @@ export class TagsService {
 
   async getAllTags(user: CurrentUser) {
     try {
-      const foundTags = await db
+      const foundTags = await this.databaseService
+        .getDB()
         .select()
         .from(tags)
         .where(eq(tags.authorId, user.userId));
@@ -55,7 +61,8 @@ export class TagsService {
 
   async getTagById(user: CurrentUser, id: string): Promise<Tag> {
     try {
-      const result = await db
+      const result = await this.databaseService
+        .getDB()
         .select()
         .from(tags)
         .where(and(eq(tags.id, id), eq(tags.authorId, user.userId)));
@@ -79,7 +86,8 @@ export class TagsService {
 
   async getTagByTitle(user: CurrentUser, title: string): Promise<Tag> {
     try {
-      const result = await db
+      const result = await this.databaseService
+        .getDB()
         .select()
         .from(tags)
         .where(and(eq(tags.title, title), eq(tags.authorId, user.userId)));
@@ -108,7 +116,8 @@ export class TagsService {
     // ? Is there a better way to do this?
     await this.getTagById(user, id);
     try {
-      const [updated] = await db
+      const [updated] = await this.databaseService
+        .getDB()
         .update(tags)
         .set({ ...dto })
         .where(and(eq(tags.id, id), eq(tags.authorId, user.userId)))
@@ -134,7 +143,8 @@ export class TagsService {
     // ? Is there a better way to do this?
     await this.getTagById(user, id);
     try {
-      const deleted = await db
+      const deleted = await this.databaseService
+        .getDB()
         .delete(tags)
         .where(eq(tags.id, id))
         .returning({ id: tags.id });

@@ -9,17 +9,20 @@ import { users } from "src/db/user";
 import { CurrentUser, User } from "notes-app-types";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
 import { eq } from "drizzle-orm";
-import { db } from "src/database/db";
 import { hashPassword } from "src/util/passwordHelpers";
 import { DatabaseError } from "pg";
+import { DatabaseService } from "src/database/database.service";
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
+  constructor(private readonly databaseService: DatabaseService) {}
+
   async createUser(dto: CreateUserDto): Promise<User> {
     try {
-      const user = await db
+      const user = await this.databaseService
+        .getDB()
         .insert(users)
         .values({
           email: dto.email,
@@ -43,7 +46,11 @@ export class UsersService {
 
   async getUserById(id: string): Promise<User> {
     try {
-      const result = await db.select().from(users).where(eq(users.id, id));
+      const result = await this.databaseService
+        .getDB()
+        .select()
+        .from(users)
+        .where(eq(users.id, id));
       const user = result[0];
       if (!user) {
         throw new NotFoundException(`User with ID ${id} not found`);
@@ -62,7 +69,8 @@ export class UsersService {
 
   async getUserByUsername(username: string): Promise<User> {
     try {
-      const result = await db
+      const result = await this.databaseService
+        .getDB()
         .select()
         .from(users)
         .where(eq(users.username, username));
@@ -94,7 +102,8 @@ export class UsersService {
       throw new ForbiddenException("You can't update another user");
     }
     try {
-      await db
+      await this.databaseService
+        .getDB()
         .update(users)
         .set({
           email: dto.email,
