@@ -45,6 +45,7 @@ async function bootstrap() {
   });
   app.useGlobalPipes(
     new ValidationPipe({
+      // Enable `@Transform` decorator for all DTOs
       transform: true,
     }),
   );
