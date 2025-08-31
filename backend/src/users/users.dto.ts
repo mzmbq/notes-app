@@ -1,9 +1,5 @@
-import {
-  IsEmail,
-  IsOptional,
-  IsString,
-  IsStrongPassword,
-} from "class-validator";
+import { PartialType } from "@nestjs/swagger";
+import { IsEmail, IsString, IsStrongPassword } from "class-validator";
 
 class CreateUserDto {
   @IsEmail()
@@ -23,25 +19,6 @@ class CreateUserDto {
   password: string;
 }
 
-class UpdateUserDto {
-  @IsEmail()
-  @IsOptional()
-  email: string;
-
-  @IsString()
-  @IsOptional()
-  username: string;
-
-  @IsString()
-  @IsOptional()
-  @IsStrongPassword({
-    minLength: 8,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-    minSymbols: 0,
-  })
-  password: string;
-}
+class UpdateUserDto extends PartialType(CreateUserDto) {}
 
 export { CreateUserDto, UpdateUserDto };
