@@ -1,5 +1,6 @@
-import { pgTable, varchar, uuid } from "drizzle-orm/pg-core";
+import { pgTable, varchar, uuid, primaryKey } from "drizzle-orm/pg-core";
 import { users } from "./user";
+import { notes } from "./note";
 
 export const tags = pgTable("tag", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -10,3 +11,18 @@ export const tags = pgTable("tag", {
     .references(() => users.id, { onDelete: "cascade" }),
   backgroundColor: varchar("background_color").notNull(),
 });
+
+export const noteTags = pgTable(
+  "note_tag",
+  {
+    noteId: uuid("note_id")
+      .notNull()
+      .references(() => notes.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.noteId, t.tagId] }),
+  }),
+);

@@ -10,9 +10,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { HomeStackParamList } from "./Routes";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { fetchCreateNote, fetchUpdateNote } from "../api/note";
+import { fetchAllTags } from "../api/tag";
 import { useAuth } from "../hooks/useAuth";
 import { log } from "../logger/logger";
 import { debounce } from "lodash";
+import { Tag } from "notes-app-types";
+import TagPill from "../components/Tag";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Editor">;
 
@@ -25,6 +28,7 @@ const Editor = (props: Props) => {
   const [content, setContent] = useState<string>(note?.content ?? "");
   const [noteId, setNoteId] = useState<string | undefined>(note?.id);
   const [isSaved, setIsSaved] = useState(true);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const doCreate = async (title: string, content: string) => {
     try {
@@ -113,6 +117,24 @@ const Editor = (props: Props) => {
     return unsub;
   }, [navigation, isSaved]);
 
+  useEffect(() => {
+    fetchTags();
+    console.log("tags", tags);
+  }, []);
+
+  const fetchTags = async () => {
+    try {
+      if (!auth.state.authenticated || !auth.state.token) {
+        log.error("[Home] Not authorized. Cannot load notes.");
+        return;
+      }
+      const tags = await fetchAllTags();
+      setTags(tags);
+    } catch (err) {
+      log.error(err);
+    }
+  };
+
   return (
     <View className="flex flex-col w-full h-full bg-white">
       <View className="flex flex-row items-center justify-between gap-10">
@@ -122,19 +144,11 @@ const Editor = (props: Props) => {
           showsHorizontalScrollIndicator={false}
           className="flex flex-row my-4 overflow-auto"
         >
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
-          <Text>Tag 1</Text>
+          {tags.map((tag) => (
+            <View key={tag.id}>
+              <TagPill tag={tag}></TagPill>
+            </View>
+          ))}
         </ScrollView>
         <Pressable>
           <Text>Tag + </Text>

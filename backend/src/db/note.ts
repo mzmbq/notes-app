@@ -7,7 +7,7 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { users } from "./user";
-import { tags } from "./tag";
+import { noteTags, tags } from "./tag";
 
 export const notes = pgTable("note", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -27,7 +27,7 @@ export const userRelations = relations(users, ({ many }) => ({
 }));
 
 export const tagRelations = relations(tags, ({ one, many }) => ({
-  notes: many(notes),
+  noteTags: many(noteTags),
   user: one(users, {
     fields: [tags.authorId],
     references: [users.id],
@@ -39,5 +39,16 @@ export const noteRelations = relations(notes, ({ one, many }) => ({
     fields: [notes.authorId],
     references: [users.id],
   }),
-  tags: many(tags),
+  noteTags: many(noteTags),
+}));
+
+export const noteTagRelations = relations(noteTags, ({ one }) => ({
+  note: one(notes, {
+    fields: [noteTags.noteId],
+    references: [notes.id],
+  }),
+  tag: one(tags, {
+    fields: [noteTags.tagId],
+    references: [tags.id],
+  }),
 }));

@@ -9,12 +9,15 @@ type Props = {
 
 // TODO: implement
 const TagPill = (props: Props) => {
-  log.info("Tag", props.tag.color);
+  log.info("Tag", props.tag.backgroundColor);
   return (
     <Text
       className="rounded-xl px-2 py-0.5"
       // Tailwind does not support dynamic colors, so we use inline styles
-      style={{ backgroundColor: props.tag.color }}
+      style={{
+        backgroundColor: props.tag.backgroundColor,
+        color: props.tag.textColor,
+      }}
     >
       {props.tag.title}
     </Text>
