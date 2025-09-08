@@ -21,6 +21,8 @@ import { fetchDeleteNote } from "../api/note";
 import { log } from "../logger/logger";
 import { useAuth } from "../hooks/useAuth";
 import useFetchBackend from "../hooks/useFetchBackend";
+import { fetchTagsByNote } from "../api/tag";
+import TagPill from "./Tag";
 
 type Props = {
   note: Note;
@@ -33,23 +35,7 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 // TODO: implement
 const NoteCard = (props: Props) => {
-  // const tags: Tag[] = [
-  //   {
-  //     color: "#ff00ff",
-  //     id: "1231",
-  //     title: "tag1",
-  //   },
-  //   {
-  //     color: "#00ffff",
-  //     id: "123",
-  //     title: "tag2",
-  //   },
-  //   {
-  //     color: "#00ff00",
-  //     id: "1232",
-  //     title: "tag3",
-  //   },
-  // ];
+  const [tags, setTags] = useState<Tag[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [deleting, setDeleting] = useState(false);
   // Shared values for blur intensity and dark overlay opacity
@@ -92,9 +78,22 @@ const NoteCard = (props: Props) => {
         props.onDeleted(props.note.id);
       }
     } catch (err) {
-      log.error("ERROR!: ", err);
+      log.error(err);
     } finally {
       setModalVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    getTagsByNote();
+  }, []);
+
+  const getTagsByNote = async () => {
+    try {
+      const tags = await fetchTagsByNote(props.note.id);
+      setTags(tags);
+    } catch (err) {
+      log.error(err);
     }
   };
 
@@ -105,13 +104,13 @@ const NoteCard = (props: Props) => {
           <Text className="text-xl font-bold flex flex-row">
             {props.note.title}
           </Text>
-          {/*
-        <View className="flex flex-row gap-1">
-           {tags.map((t) => (
-                <TagPill tag={t} key={t.id} />
-              ))} 
-        </View>
-        */}
+
+          <View className="flex flex-row gap-1">
+            {tags.map((t) => (
+              <TagPill tag={t} key={t.id} />
+            ))}
+          </View>
+
           <Text>{props.note.content}</Text>
         </TouchableOpacity>
         <Pressable onPress={() => setModalVisible(true)}>

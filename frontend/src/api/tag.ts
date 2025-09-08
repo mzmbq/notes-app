@@ -8,3 +8,9 @@ export const fetchAllTags = async (): Promise<Tag[]> => {
     method: "GET",
   });
 };
+
+export const fetchTagsByNote = async (noteId: string): Promise<Tag[]> => {
+  return await apiFetch(`${BACKEND_URL}/tags/note/${noteId}`, {
+    method: "GET",
+  });
+};

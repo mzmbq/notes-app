@@ -27,7 +27,7 @@ export class TagsController {
     return this.tagsService.createTag(user, createTagDto);
   }
 
-  @Post(":tagId/note/:noteId")
+  @Post(":tagId/notes/:noteId")
   @UseGuards(AuthGuard)
   addTagToNote(
     @CurrentUserDecorator() user: CurrentUser,
@@ -41,6 +41,15 @@ export class TagsController {
   @UseGuards(AuthGuard)
   getAllTags(@CurrentUserDecorator() user: CurrentUser) {
     return this.tagsService.getAllTags(user);
+  }
+
+  @Get("note/:id")
+  @UseGuards(AuthGuard)
+  getTagsByNote(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("id") id: string,
+  ) {
+    return this.tagsService.getTagsByNote(user, id);
   }
 
   @Get(":id")

@@ -97,6 +97,26 @@ export class TagsService {
     return tag;
   }
 
+  async getTagsByNote(
+    currentUser: CurrentUser,
+    noteId: string,
+  ): Promise<Tag[]> {
+    if (!isUUID(noteId)) {
+      throw new BadRequestException(
+        `[getTagById] Invalid tag ID format: "${noteId}"`,
+      );
+    }
+
+    const result = await db.query.noteTags.findMany({
+      where: eq(noteTags.noteId, noteId),
+    });
+
+    const tags = await Promise.all(
+      result.map((r) => this.getTagById(currentUser, r.tagId)),
+    );
+    return tags;
+  }
+
   async getTagByTitle(user: CurrentUser, title: string): Promise<Tag> {
     const result = await db
       .select()
