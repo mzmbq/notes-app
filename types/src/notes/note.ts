@@ -1,3 +1,5 @@
+import type { Tag } from "./tag.js";
+
 export type Note = {
   id: string;
   authorId?: string;
@@ -6,4 +8,5 @@ export type Note = {
   isFavorite: boolean;
   createdAt: Date;
   updatedAt: Date;
+  tags: Tag[];
 };

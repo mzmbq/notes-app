@@ -7,17 +7,21 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { CreateNoteDto, UpdateNoteDto } from "./notes.dto";
-import { notes } from "src/db/note";
+import { notes } from "src/db/schema/note";
 import { db } from "src/database/db";
 import { eq, and } from "drizzle-orm";
 import { isUUID } from "class-validator";
 import { CurrentUser } from "notes-app-types";
 import { Note } from "notes-app-types";
+import { noteTags, tags } from "src/db/schema/tag";
 
 @Injectable()
 export class NotesService {
   private readonly logger = new Logger(NotesService.name);
-  async createNote(user: CurrentUser, dto: CreateNoteDto): Promise<Note> {
+  async createNote(
+    currentUser: CurrentUser,
+    dto: CreateNoteDto,
+  ): Promise<Note> {
     let title = dto.title;
     if (!title) {
       title = "New note";
@@ -28,10 +32,10 @@ export class NotesService {
         .values({
           title: title.trim(),
           content: dto.content.trim(),
-          authorId: user.userId,
+          authorId: currentUser.userId,
         })
         .returning();
-      return note[0];
+      return await this.getNoteById(currentUser, note[0].id);
     } catch (err) {
       if (err instanceof Error) {
         throw new Error("[createNote] Failed creating a note", err);
@@ -45,16 +49,23 @@ export class NotesService {
     try {
       const pageSize = 20;
       const offset = page * pageSize;
+      const foundNotes = await db.query.notes.findMany({
+        where: eq(notes.authorId, user.userId),
+        limit: pageSize,
+        offset: offset,
+        orderBy: notes.updatedAt,
+        with: {
+          noteTags: {
+            with: { tag: true },
+            columns: { noteId: false, tagId: false },
+          },
+        },
+      });
 
-      const foundNotes = await db
-        .select()
-        .from(notes)
-        .where(eq(notes.authorId, user.userId))
-        .limit(pageSize)
-        .offset(offset)
-        .orderBy(notes.updatedAt);
-
-      return foundNotes;
+      return foundNotes.map(({ noteTags, ...n }) => ({
+        ...n,
+        tags: noteTags.map((nt) => nt.tag),
+      }));
     } catch (err) {
       this.logger.error(
         `[getNotes] Failed getting notes for user ${user.userId} on page ${page}`,
@@ -86,18 +97,35 @@ export class NotesService {
         "You can't get / update / delete another user's note",
       );
     }
-    return note;
+
+    const tagsOfNote = await db
+      .select({ tag: tags })
+      .from(noteTags)
+      .innerJoin(tags, eq(noteTags.tagId, tags.id))
+      .where(eq(noteTags.noteId, id));
+
+    const noteWithTags: Note = {
+      ...note,
+      tags: tagsOfNote.map((tag) => tag.tag),
+    };
+    return noteWithTags;
   }
 
   async getAllFavoriteNotes(user: CurrentUser): Promise<Note[]> {
     try {
-      const foundNotes = await db
-        .select()
-        .from(notes)
-        .where(
-          and(eq(notes.authorId, user.userId), eq(notes.isFavorite, true)),
-        );
-      return foundNotes;
+      const foundNotes = await db.query.notes.findMany({
+        where: and(eq(notes.authorId, user.userId), eq(notes.isFavorite, true)),
+        with: {
+          noteTags: {
+            with: { tag: true },
+            columns: { noteId: false, tagId: false },
+          },
+        },
+      });
+      return foundNotes.map(({ noteTags, ...n }) => ({
+        ...n,
+        tags: noteTags.map((nt) => nt.tag),
+      }));
     } catch (err) {
       if (err instanceof Error) {
         this.logger.error(
@@ -116,11 +144,19 @@ export class NotesService {
 
   async getAllNotes(user: CurrentUser): Promise<Note[]> {
     try {
-      const foundNotes = await db
-        .select()
-        .from(notes)
-        .where(eq(notes.authorId, user.userId));
-      return foundNotes;
+      const foundNotes = await db.query.notes.findMany({
+        where: eq(notes.authorId, user.userId),
+        with: {
+          noteTags: {
+            with: { tag: true },
+            columns: { noteId: false, tagId: false },
+          },
+        },
+      });
+      return foundNotes.map(({ noteTags, ...n }) => ({
+        ...n,
+        tags: noteTags.map((nt) => nt.tag),
+      }));
     } catch (err) {
       if (err instanceof Error) {
         this.logger.error(
@@ -155,7 +191,7 @@ export class NotesService {
         })
         .where(eq(notes.id, id))
         .returning();
-      return updated;
+      return await this.getNoteById(currentUser, updated.id);
     } catch (err) {
       // Tempory fix for error handling. Will be handled by exception filter later
       if (err instanceof Error) {

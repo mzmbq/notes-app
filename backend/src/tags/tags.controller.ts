@@ -27,6 +27,16 @@ export class TagsController {
     return this.tagsService.createTag(user, createTagDto);
   }
 
+  @Post(":tagId/note/:noteId")
+  @UseGuards(AuthGuard)
+  addTagToNote(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("tagId") tagId: string,
+    @Param("noteId") noteId: string,
+  ) {
+    return this.tagsService.addTagToNote(user, tagId, noteId);
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   getAllTags(@CurrentUserDecorator() user: CurrentUser) {

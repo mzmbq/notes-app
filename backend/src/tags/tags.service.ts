@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { db } from "src/database/db";
-import { tags } from "src/db/tag";
+import { noteTags, tags } from "src/db/schema/tag";
 import { CurrentUser, Tag } from "notes-app-types";
 import { NotesService } from "src/notes/notes.service";
 import { eq, and } from "drizzle-orm";
@@ -35,6 +35,28 @@ export class TagsService {
         throw new Error("[createTag] Failed creating a tag", err);
       }
       throw new Error("[createTag] Failed creating a tag (Unknown error)");
+    }
+  }
+
+  async addTagToNote(
+    user: CurrentUser,
+    tagId: string,
+    noteId: string,
+  ): Promise<void> {
+    const foundNote = await this.notesService.getNoteById(user, noteId);
+    const foundTag = await this.getTagById(user, tagId);
+    try {
+      await db.insert(noteTags).values({
+        noteId: foundNote.id,
+        tagId: foundTag.id,
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error("[addTagToNote] Failed adding a tag to a note", err);
+      }
+      throw new Error(
+        "[addTagToNote] Failed adding a tag to a note (Unknown error)",
+      );
     }
   }
 

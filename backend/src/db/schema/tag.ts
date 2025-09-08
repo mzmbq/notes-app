@@ -1,4 +1,4 @@
-import { pgTable, varchar, uuid, primaryKey } from "drizzle-orm/pg-core";
+import { varchar, uuid, primaryKey, pgTable } from "drizzle-orm/pg-core";
 import { users } from "./user";
 import { notes } from "./note";
 

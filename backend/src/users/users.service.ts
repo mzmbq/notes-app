@@ -7,7 +7,7 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { users } from "src/db/user";
+import { users } from "src/db/schema/user";
 import { CurrentUser, User } from "notes-app-types";
 import { CreateUserDto, UpdateUserDto } from "./users.dto";
 import { eq } from "drizzle-orm";
