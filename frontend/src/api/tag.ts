@@ -14,3 +14,18 @@ export const fetchTagsByNote = async (noteId: string): Promise<Tag[]> => {
     method: "GET",
   });
 };
+
+export const fetchCreateTag = async (
+  title: string,
+  textColor: string,
+  backgroundColor: string
+): Promise<Tag> => {
+  return await apiFetch(`${BACKEND_URL}/tags/`, {
+    method: "POST",
+    body: {
+      title: title,
+      textColor: textColor,
+      backgroundColor: backgroundColor,
+    },
+  });
+};

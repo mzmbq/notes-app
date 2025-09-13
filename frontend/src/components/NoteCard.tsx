@@ -104,14 +104,13 @@ const NoteCard = (props: Props) => {
           <Text className="text-xl font-bold flex flex-row">
             {props.note.title}
           </Text>
+          {props.note.content !== "" && <Text>{props.note.content}</Text>}
 
-          <View className="flex flex-row gap-1">
+          <View className="flex flex-row gap-1 mt-2">
             {tags.map((t) => (
               <TagPill tag={t} key={t.id} />
             ))}
           </View>
-
-          <Text>{props.note.content}</Text>
         </TouchableOpacity>
         <Pressable onPress={() => setModalVisible(true)}>
           <IconTrash className="size-10 text-black" />
