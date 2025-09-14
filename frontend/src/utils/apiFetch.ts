@@ -1,4 +1,3 @@
-// utils/apiFetch.ts
 import secureStore from "../utils/secureStore";
 
 export const apiFetch = async <T>(
@@ -24,5 +23,9 @@ export const apiFetch = async <T>(
     );
   }
 
-  return res.json() as Promise<T>;
+  const text = await res.text();
+  if (!text) {
+    return undefined as T;
+  }
+  return JSON.parse(text) as T;
 };

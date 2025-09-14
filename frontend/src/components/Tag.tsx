@@ -5,18 +5,18 @@ import { log } from "../logger/logger";
 
 type Props = {
   tag: Tag;
+  isActive: boolean;
 };
 
 // TODO: implement
 const TagPill = (props: Props) => {
-  log.info("Tag", props.tag.backgroundColor);
   return (
     <Text
       className="rounded-xl px-2 py-0.5"
       // Tailwind does not support dynamic colors, so we use inline styles
       style={{
-        backgroundColor: props.tag.backgroundColor,
-        color: props.tag.textColor,
+        backgroundColor: props.isActive ? props.tag.backgroundColor : "#B5B5B5",
+        color: props.isActive ? props.tag.textColor : "#2E2E2E",
       }}
     >
       {props.tag.title}

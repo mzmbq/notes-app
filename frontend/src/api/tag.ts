@@ -29,3 +29,12 @@ export const fetchCreateTag = async (
     },
   });
 };
+
+export const fetchAddTagToNote = async (
+  noteId: string,
+  tagId: string
+): Promise<void> => {
+  return await apiFetch(`${BACKEND_URL}/tags/${tagId}/notes/${noteId}`, {
+    method: "POST",
+  });
+};

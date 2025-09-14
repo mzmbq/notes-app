@@ -11,7 +11,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { HomeStackParamList } from "./Routes";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { fetchCreateNote, fetchUpdateNote } from "../api/note";
-import { fetchAllTags, fetchCreateTag } from "../api/tag";
+import {
+  fetchAddTagToNote,
+  fetchAllTags,
+  fetchCreateTag,
+  fetchTagsByNote,
+} from "../api/tag";
 import { useAuth } from "../hooks/useAuth";
 import { log } from "../logger/logger";
 import { debounce } from "lodash";
@@ -27,7 +32,7 @@ import Animated, {
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Editor">;
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
-// TODO: implement
+
 const Editor = (props: Props) => {
   const navigation = props.navigation;
   const note = props.route.params.note;
@@ -36,7 +41,8 @@ const Editor = (props: Props) => {
   const [content, setContent] = useState<string>(note?.content ?? "");
   const [noteId, setNoteId] = useState<string | undefined>(note?.id);
   const [isSaved, setIsSaved] = useState(true);
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [activeTags, setActiveTags] = useState<Tag[]>([]);
   const [newTagTitle, setNewTagTitle] = useState<string>("");
 
   const [isTagsModalVisible, setIsTagsModalVisible] = useState<boolean>(false);
@@ -154,7 +160,7 @@ const Editor = (props: Props) => {
 
   useEffect(() => {
     fetchTags();
-    console.log("tags", tags);
+    console.log("tags", allTags);
   }, []);
 
   const fetchTags = async () => {
@@ -164,7 +170,7 @@ const Editor = (props: Props) => {
         return;
       }
       const tags = await fetchAllTags();
-      setTags(tags);
+      setAllTags(tags);
     } catch (err) {
       log.error(err);
     }
@@ -181,8 +187,49 @@ const Editor = (props: Props) => {
         log.error("[Home] Not authorized. Cannot create tag.");
         return;
       }
-      await fetchCreateTag(newTagTitle, "#fff", "#1fdba0");
+      await fetchCreateTag(newTagTitle, "#000", "#E6DAF0");
       fetchTags();
+    } catch (err) {
+      log.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (noteId) getTagsByNote();
+  }, [noteId]);
+
+  const getTagsByNote = async () => {
+    if (!noteId) return;
+    try {
+      const tags = await fetchTagsByNote(noteId);
+      setActiveTags(tags);
+    } catch (err) {
+      log.error(err);
+    }
+  };
+
+  const isTagActive = (tag: Tag): boolean => {
+    if (activeTags.find((t) => t.id === tag.id)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const addTagToNote = async (tag: Tag) => {
+    if (!noteId || !note) return;
+    try {
+      if (!auth.state.authenticated || !auth.state.token) {
+        log.error("[Home] Not authorized. Cannot add tag to note.");
+        return;
+      }
+      await fetchAddTagToNote(noteId, tag.id);
+      setActiveTags((prev) =>
+        prev.some((t) => t.id === tag.id) ? prev : [...prev, tag]
+      );
+      /** Trigger rerender of tags on the Home Screen */
+      const tags = await fetchTagsByNote(noteId);
+      props.route.params?.updateNote?.({ ...note, tags: tags });
     } catch (err) {
       log.error(err);
     }
@@ -198,9 +245,9 @@ const Editor = (props: Props) => {
             showsHorizontalScrollIndicator={false}
             className="flex flex-row my-4 overflow-auto"
           >
-            {tags.map((tag) => (
+            {activeTags.map((tag) => (
               <View key={tag.id}>
-                <TagPill tag={tag}></TagPill>
+                <TagPill tag={tag} isActive={true}></TagPill>
               </View>
             ))}
           </ScrollView>
@@ -244,9 +291,11 @@ const Editor = (props: Props) => {
             <Text className="text-white mb-4">Tags</Text>
             <View>
               <View className="flex flex-row gap-x-3 gap-y-2 flex-wrap">
-                {tags.map((tag) => (
+                {allTags.map((tag) => (
                   <View key={tag.id}>
-                    <TagPill tag={tag}></TagPill>
+                    <Pressable onPress={() => addTagToNote(tag)}>
+                      <TagPill tag={tag} isActive={isTagActive(tag)}></TagPill>
+                    </Pressable>
                   </View>
                 ))}
               </View>

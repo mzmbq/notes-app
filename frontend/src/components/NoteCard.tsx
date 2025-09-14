@@ -86,7 +86,7 @@ const NoteCard = (props: Props) => {
 
   useEffect(() => {
     getTagsByNote();
-  }, []);
+  }, [props.note]);
 
   const getTagsByNote = async () => {
     try {
@@ -107,8 +107,8 @@ const NoteCard = (props: Props) => {
           {props.note.content !== "" && <Text>{props.note.content}</Text>}
 
           <View className="flex flex-row gap-1 mt-2">
-            {tags.map((t) => (
-              <TagPill tag={t} key={t.id} />
+            {props.tags.map((t) => (
+              <TagPill tag={t} key={t.id} isActive={true} />
             ))}
           </View>
         </TouchableOpacity>

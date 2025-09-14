@@ -8,9 +8,10 @@ import NoteCard from "../components/NoteCard";
 import { fetchPaginatedNotes, fetchUpdateNote } from "../api/note";
 import { useAuth } from "../hooks/useAuth";
 import { log } from "../logger/logger";
-import { Note } from "notes-app-types";
+import { Note, Tag } from "notes-app-types";
 import useFetchBackend from "../hooks/useFetchBackend";
 import { IconCirclePlus } from "@tabler/icons-react-native";
+import { fetchTagsByNote } from "../api/tag";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Home">;
 
@@ -19,6 +20,7 @@ const Home = ({ navigation }: Props) => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const auth = useAuth();
+  const [activeNoteTags, setActiveNoteTags] = useState<Tag[]>([]);
 
   const {
     loading,
@@ -37,14 +39,20 @@ const Home = ({ navigation }: Props) => {
       log.error("[Home] Not authorized. Cannot load notes.");
       return;
     }
-    const newNotes = await fetchMoreNotes({
+    const pageNotes = await fetchMoreNotes({
       token: auth.state.token,
       pageNum: page,
     });
-    setNotes((prevNotes) => [...prevNotes, ...newNotes]);
-    if (newNotes.length === 0) {
-      setHasMore(false);
-    }
+
+    const pageNotesWithTags = await Promise.all(
+      pageNotes.map(async (n) => {
+        const tags = await fetchTagsByNote(n.id);
+        return { ...n, tags };
+      })
+    );
+    setNotes((prev) => [...prev, ...pageNotesWithTags]);
+
+    if (pageNotes.length === 0) setHasMore(false);
     console.log("Notes fetched");
   };
 
@@ -59,19 +67,17 @@ const Home = ({ navigation }: Props) => {
   };
 
   const updateNote = (note: Note) => {
-    let isNewNote: boolean = true;
-    const newNotes = notes.map((e) => {
-      if (e.id === note.id) {
-        isNewNote = false;
-        return note;
-      } else {
-        return e;
-      }
+    setNotes((prev) => {
+      let found = false;
+      const next = prev.map((n) => {
+        if (n.id === note.id) {
+          found = true;
+          return note;
+        }
+        return n;
+      });
+      return found ? next : [...next, note];
     });
-    if (isNewNote) {
-      newNotes.push(note);
-    }
-    setNotes(newNotes);
   };
 
   const renderItem = ({ item }: { item: Note }) => (
@@ -84,11 +90,26 @@ const Home = ({ navigation }: Props) => {
             updateNote: updateNote,
           })
         }
-        tags={[]}
+        tags={item.tags ?? []}
         onDeleted={handleDeleted}
       />
     </View>
   );
+
+  useEffect(() => {
+    getTagsByNote();
+  }, [page, auth]);
+
+  const getTagsByNote = async () => {
+    try {
+      notes.map(async (note) => {
+        const tags = await fetchTagsByNote(note.id);
+        setActiveNoteTags((prev) => [...prev, ...tags]);
+      });
+    } catch (err) {
+      log.error(err);
+    }
+  };
 
   const loadingMessage = (
     <View className="py-4">

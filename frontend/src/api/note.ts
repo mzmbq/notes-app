@@ -111,14 +111,11 @@ export const fetchDeleteNote = async (
       );
     }
 
-    // если бэк шлёт 204 No Content — просто выходим
     if (response.status === 204) return;
 
-    // если иногда приходит тело — читаем ОДИН раз
     const text = await response.text();
     if (!text) return;
-    // если ожидается JSON — распарсить вручную
-    JSON.parse(text); // или верните значение, если нужно
+    JSON.parse(text);
   } catch (err: unknown) {
     throw err;
   }
