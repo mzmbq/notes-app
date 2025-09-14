@@ -47,3 +47,9 @@ export const fetchRemoveTagFromNote = async (
     method: "DELETE",
   });
 };
+
+export const fetchDeleteTag = async (tagId: string): Promise<void> => {
+  return await apiFetch(`${BACKEND_URL}/tags/${tagId}`, {
+    method: "DELETE",
+  });
+};

@@ -15,6 +15,7 @@ import {
   fetchAddTagToNote,
   fetchAllTags,
   fetchCreateTag,
+  fetchDeleteTag,
   fetchRemoveTagFromNote,
   fetchTagsByNote,
 } from "../api/tag";
@@ -30,6 +31,13 @@ import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import {
+  IconCaretDown,
+  IconCaretDownFilled,
+  IconCaretUp,
+  IconCaretUpFilled,
+} from "@tabler/icons-react-native";
+import { getRandomTagColor } from "../utils/tagColors";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Editor">;
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
@@ -49,10 +57,20 @@ const Editor = (props: Props) => {
   const [isTagsModalVisible, setIsTagsModalVisible] = useState<boolean>(false);
   const [isCreateNewTagInputsVisible, setIsCreatingNewTagInputsVisible] =
     useState<boolean>(false);
+  // Deleting Mod for Tag
+  const [isDeletingModActive, setIsDeletingModActive] =
+    useState<boolean>(false);
 
   // Shared values for blur intensity and dark overlay opacity
   const blur = useSharedValue(0);
   const dimOpacity = useSharedValue(0);
+  // Animated props for BlurView: intensity ist animierbar über Animated.createAnimatedComponent
+  const blurProps = useAnimatedProps(() => ({ intensity: blur.value }));
+  // Animated style für dunklen Overlay
+  const dimStyle = useAnimatedStyle(() => ({
+    backgroundColor: `rgba(0,0,0,${dimOpacity.value})`,
+  }));
+
   // Animate when modalVisible changes
   useEffect(() => {
     if (isTagsModalVisible) {
@@ -64,13 +82,32 @@ const Editor = (props: Props) => {
     }
   }, [isTagsModalVisible]);
 
-  // Animated props for BlurView: intensity ist animierbar über Animated.createAnimatedComponent
-  const blurProps = useAnimatedProps(() => ({ intensity: blur.value }));
+  useEffect(() => {
+    if (!isSaved) {
+      debouncedSaveNote();
+      return () => {
+        debouncedSaveNote.cancel();
+      };
+    }
+  }, [title, content]);
 
-  // Animated style für dunklen Overlay
-  const dimStyle = useAnimatedStyle(() => ({
-    backgroundColor: `rgba(0,0,0,${dimOpacity.value})`,
-  }));
+  useEffect(() => {
+    const unsub = navigation.addListener("beforeRemove", (e) => {
+      if (isSaved) return;
+      e.preventDefault();
+      saveNote();
+      debouncedSaveNote.cancel();
+    });
+    return unsub;
+  }, [navigation, isSaved]);
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
+
+  useEffect(() => {
+    if (noteId) getTagsByNote();
+  }, [noteId]);
 
   const doCreate = async (title: string, content: string) => {
     try {
@@ -140,29 +177,6 @@ const Editor = (props: Props) => {
 
   const debouncedSaveNote = debounce(saveNote, 200);
 
-  useEffect(() => {
-    if (!isSaved) {
-      debouncedSaveNote();
-      return () => {
-        debouncedSaveNote.cancel();
-      };
-    }
-  }, [title, content]);
-
-  useEffect(() => {
-    const unsub = navigation.addListener("beforeRemove", (e) => {
-      if (isSaved) return;
-      e.preventDefault();
-      saveNote();
-      debouncedSaveNote.cancel();
-    });
-    return unsub;
-  }, [navigation, isSaved]);
-
-  useEffect(() => {
-    fetchTags();
-  }, []);
-
   const fetchTags = async () => {
     try {
       if (!auth.state.authenticated || !auth.state.token) {
@@ -179,6 +193,7 @@ const Editor = (props: Props) => {
   const closeModal = () => {
     setIsCreatingNewTagInputsVisible(false);
     setIsTagsModalVisible(false);
+    setIsDeletingModActive(false);
   };
 
   const createTag = async () => {
@@ -187,16 +202,13 @@ const Editor = (props: Props) => {
         log.error("[Home] Not authorized. Cannot create tag.");
         return;
       }
-      await fetchCreateTag(newTagTitle, "#000", "#E6DAF0");
+      const randomColor = getRandomTagColor();
+      await fetchCreateTag(newTagTitle, "#000", randomColor);
       fetchTags();
     } catch (err) {
       log.error(err);
     }
   };
-
-  useEffect(() => {
-    if (noteId) getTagsByNote();
-  }, [noteId]);
 
   const getTagsByNote = async () => {
     if (!noteId) return;
@@ -220,7 +232,7 @@ const Editor = (props: Props) => {
     if (!noteId || !note) return;
     try {
       if (!auth.state.authenticated || !auth.state.token) {
-        log.error("[Home] Not authorized. Cannot add tag to note.");
+        log.error("Not authorized. Cannot add tag to note.");
         return;
       }
       await fetchAddTagToNote(noteId, tag.id);
@@ -239,10 +251,28 @@ const Editor = (props: Props) => {
     if (!noteId || !note) return;
     try {
       if (!auth.state.authenticated || !auth.state.token) {
-        log.error("[Home] Not authorized. Cannot add tag to note.");
+        log.error("Not authorized. Cannot remove tag from note.");
         return;
       }
       await fetchRemoveTagFromNote(noteId, tag.id);
+      setActiveTags((prev) => prev.filter((t) => t.id !== tag.id));
+      /** Trigger rerender of tags on the Home Screen */
+      const tags = await fetchTagsByNote(noteId);
+      props.route.params?.updateNote?.({ ...note, tags: tags });
+    } catch (err) {
+      log.error(err);
+    }
+  };
+
+  const deleteTag = async (tag: Tag) => {
+    if (!noteId || !note) return;
+    try {
+      if (!auth.state.authenticated || !auth.state.token) {
+        log.error("Not authorized. Cannot remove tag from note.");
+        return;
+      }
+      await fetchDeleteTag(tag.id);
+      setAllTags((prev) => prev.filter((t) => t.id !== tag.id));
       setActiveTags((prev) => prev.filter((t) => t.id !== tag.id));
       /** Trigger rerender of tags on the Home Screen */
       const tags = await fetchTagsByNote(noteId);
@@ -297,7 +327,7 @@ const Editor = (props: Props) => {
         visible={isTagsModalVisible}
         onRequestClose={() => closeModal()}
       >
-        <View className="flex-1 items-center bg-red-300/50 backdrop-blur-sm">
+        <View className="flex-1 items-center bg-black/50 backdrop-blur-sm">
           <AnimatedBlurView
             animatedProps={blurProps}
             className="absolute inset-0"
@@ -305,7 +335,7 @@ const Editor = (props: Props) => {
           />
           <Animated.View style={[StyleSheet.absoluteFill, dimStyle]} />
           <View className="bg-slate-600 mt-20 border rounded-2xl p-5 w-[90%]">
-            <Text className="text-white mb-4">Tags</Text>
+            <Text className="text-white mb-4 text-3xl">Tags</Text>
             <View>
               <View className="flex flex-row gap-x-3 gap-y-2 flex-wrap">
                 {allTags.map((tag) => (
@@ -319,25 +349,36 @@ const Editor = (props: Props) => {
                         }
                       }}
                     >
-                      <TagPill tag={tag} isActive={isTagActive(tag)}></TagPill>
+                      <TagPill
+                        tag={tag}
+                        isActive={isTagActive(tag)}
+                        isDeletingModActive={isDeletingModActive}
+                        deleteTag={() => deleteTag(tag)}
+                      ></TagPill>
                     </Pressable>
                   </View>
                 ))}
               </View>
-              <View className="my-4">
+              <View className="flex flex-col gap-y-4 my-4">
                 <Pressable
+                  className="flex flex-row items-end"
                   onPress={() =>
                     setIsCreatingNewTagInputsVisible(
                       !isCreateNewTagInputsVisible
                     )
                   }
                 >
-                  <Text>Create new Tag</Text>
+                  <Text className="text-white text-xl">Create new Tag</Text>
+                  {isCreateNewTagInputsVisible ? (
+                    <IconCaretUpFilled color={"#fff"} />
+                  ) : (
+                    <IconCaretDownFilled color={"#fff"} />
+                  )}
                 </Pressable>
                 {isCreateNewTagInputsVisible && (
                   <View className="relative">
                     <TextInput
-                      className="border rounded-lg p-2"
+                      className="border rounded-lg p-2 border-white text-white"
                       placeholder="Enter a name for a tag"
                       onChangeText={setNewTagTitle}
                       value={newTagTitle}
@@ -353,16 +394,21 @@ const Editor = (props: Props) => {
                     </Pressable>
                   </View>
                 )}
+                <View>
+                  <Pressable
+                    onPress={() => setIsDeletingModActive(!isDeletingModActive)}
+                  >
+                    <Text className="text-white text-xl">
+                      Deleting Tags: {isDeletingModActive ? "On" : "Off"}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
               <View className="flex flex-row justify-between">
                 <Pressable
-                  onPress={() => {
-                    closeModal();
-                  }}
+                  className="w-full bg-slate-500 justify-center items-center p-2"
+                  onPress={() => closeModal()}
                 >
-                  <Text className="text-white">Delete</Text>
-                </Pressable>
-                <Pressable onPress={() => closeModal()}>
                   <Text className="text-white">Cancer</Text>
                 </Pressable>
               </View>
