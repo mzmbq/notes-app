@@ -100,13 +100,13 @@ const NoteCard = (props: Props) => {
   return (
     <>
       <View className="bg-slate-300 border-solid border-black rounded-xl w-full p-2 flex flex-row justify-between">
-        <TouchableOpacity className="w-[50%]" onPress={props.onPress}>
+        <TouchableOpacity className="w-[85%]" onPress={props.onPress}>
           <Text className="text-xl font-bold flex flex-row">
             {props.note.title}
           </Text>
           {props.note.content !== "" && <Text>{props.note.content}</Text>}
 
-          <View className="flex flex-row gap-1 mt-2">
+          <View className="flex flex-row gap-1 mt-2 flex-wrap">
             {props.tags.map((t) => (
               <TagPill tag={t} key={t.id} isActive={true} />
             ))}
@@ -122,7 +122,7 @@ const NoteCard = (props: Props) => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View className="flex-1 justify-center items-center bg-red-300/50 backdrop-blur-sm">
+        <View className="flex-1 justify-center items-center bg-black/50 backdrop-blur-sm">
           <AnimatedBlurView
             animatedProps={blurProps}
             className="absolute inset-0"
@@ -132,9 +132,10 @@ const NoteCard = (props: Props) => {
 
           <View className="flex-1 justify-center items-center">
             <View className="m-20 bg-slate-600 border rounded-2xl p-5 w-[300px]">
-              <Text className="text-white mb-4">Delete Note?</Text>
-              <View className="flex flex-row justify-between">
+              <Text className="text-white mb-4 text-3xl">Delete Note?</Text>
+              <View className="flex flex-row gap-4">
                 <Pressable
+                  className="border border-white rounded-lg flex-1 justify-center items-center p-2"
                   onPress={() => {
                     handleDelete();
                     setModalVisible(false);
@@ -142,7 +143,10 @@ const NoteCard = (props: Props) => {
                 >
                   <Text className="text-white">Delete</Text>
                 </Pressable>
-                <Pressable onPress={() => setModalVisible(false)}>
+                <Pressable
+                  className="border border-white rounded-lg flex-1 justify-center items-center p-2"
+                  onPress={() => setModalVisible(false)}
+                >
                   <Text className="text-white">Cancer</Text>
                 </Pressable>
               </View>

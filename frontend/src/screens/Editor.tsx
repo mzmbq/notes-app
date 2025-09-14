@@ -285,7 +285,7 @@ const Editor = (props: Props) => {
   return (
     <>
       <View className="flex flex-col w-full h-full bg-white">
-        <View className="flex flex-row items-center justify-between gap-10">
+        <View className="flex flex-row items-center justify-between gap-5">
           <ScrollView
             horizontal={true}
             contentContainerStyle={{ gap: 6 }}
@@ -299,7 +299,7 @@ const Editor = (props: Props) => {
             ))}
           </ScrollView>
           <Pressable
-            className="mr-2 p-2 bg-slate-500"
+            className="mr-2 py-2 px-4 border rounded-lg"
             onPress={() => setIsTagsModalVisible(true)}
           >
             <Text>Tags</Text>
@@ -348,6 +348,7 @@ const Editor = (props: Props) => {
                           addTagToNote(tag);
                         }
                       }}
+                      onLongPress={() => console.log("Long press")}
                     >
                       <TagPill
                         tag={tag}
@@ -406,8 +407,9 @@ const Editor = (props: Props) => {
               </View>
               <View className="flex flex-row justify-between">
                 <Pressable
-                  className="w-full bg-slate-500 justify-center items-center p-2"
+                  className="border border-white rounded-lg flex-1 justify-center items-center p-2"
                   onPress={() => closeModal()}
+                  onLongPress={() => console.log("long press")}
                 >
                   <Text className="text-white">Cancer</Text>
                 </Pressable>
