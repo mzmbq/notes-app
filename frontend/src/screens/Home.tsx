@@ -53,7 +53,6 @@ const Home = ({ navigation }: Props) => {
     setNotes((prev) => [...prev, ...pageNotesWithTags]);
 
     if (pageNotes.length === 0) setHasMore(false);
-    console.log("Notes fetched");
   };
 
   const handleLoadMore = () => {

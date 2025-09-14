@@ -60,6 +60,30 @@ export class TagsService {
     }
   }
 
+  async removeTagFromNote(
+    user: CurrentUser,
+    tagId: string,
+    noteId: string,
+  ): Promise<void> {
+    const foundNote = await this.notesService.getNoteById(user, noteId);
+    const foundTag = await this.getTagById(user, tagId);
+    try {
+      await db
+        .delete(noteTags)
+        .where(and(eq(noteTags.noteId, noteId), eq(noteTags.tagId, tagId)));
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error(
+          `[removeTagFromNote] Failed removing tag from note `,
+          err,
+        );
+      }
+      throw new Error(
+        `[removeTagFromNote] Failed removing tag from note (Unknown Error)`,
+      );
+    }
+  }
+
   async getAllTags(user: CurrentUser) {
     try {
       const foundTags = await db

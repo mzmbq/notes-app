@@ -37,6 +37,16 @@ export class TagsController {
     return this.tagsService.addTagToNote(user, tagId, noteId);
   }
 
+  @Delete(":tagId/notes/:noteId")
+  @UseGuards(AuthGuard)
+  removeTagFromNote(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("tagId") tagId: string,
+    @Param("noteId") noteId: string,
+  ) {
+    return this.tagsService.removeTagFromNote(user, tagId, noteId);
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   getAllTags(@CurrentUserDecorator() user: CurrentUser) {

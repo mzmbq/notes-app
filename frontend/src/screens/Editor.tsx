@@ -15,6 +15,7 @@ import {
   fetchAddTagToNote,
   fetchAllTags,
   fetchCreateTag,
+  fetchRemoveTagFromNote,
   fetchTagsByNote,
 } from "../api/tag";
 import { useAuth } from "../hooks/useAuth";
@@ -160,7 +161,6 @@ const Editor = (props: Props) => {
 
   useEffect(() => {
     fetchTags();
-    console.log("tags", allTags);
   }, []);
 
   const fetchTags = async () => {
@@ -235,6 +235,23 @@ const Editor = (props: Props) => {
     }
   };
 
+  const removeTagFromNote = async (tag: Tag) => {
+    if (!noteId || !note) return;
+    try {
+      if (!auth.state.authenticated || !auth.state.token) {
+        log.error("[Home] Not authorized. Cannot add tag to note.");
+        return;
+      }
+      await fetchRemoveTagFromNote(noteId, tag.id);
+      setActiveTags((prev) => prev.filter((t) => t.id !== tag.id));
+      /** Trigger rerender of tags on the Home Screen */
+      const tags = await fetchTagsByNote(noteId);
+      props.route.params?.updateNote?.({ ...note, tags: tags });
+    } catch (err) {
+      log.error(err);
+    }
+  };
+
   return (
     <>
       <View className="flex flex-col w-full h-full bg-white">
@@ -293,7 +310,15 @@ const Editor = (props: Props) => {
               <View className="flex flex-row gap-x-3 gap-y-2 flex-wrap">
                 {allTags.map((tag) => (
                   <View key={tag.id}>
-                    <Pressable onPress={() => addTagToNote(tag)}>
+                    <Pressable
+                      onPress={() => {
+                        if (isTagActive(tag)) {
+                          removeTagFromNote(tag);
+                        } else {
+                          addTagToNote(tag);
+                        }
+                      }}
+                    >
                       <TagPill tag={tag} isActive={isTagActive(tag)}></TagPill>
                     </Pressable>
                   </View>
