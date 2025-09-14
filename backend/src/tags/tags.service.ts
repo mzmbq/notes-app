@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { db } from "src/database/db";
-import { tags } from "src/db/tag";
+import { noteTags, tags } from "src/db/schema/tag";
 import { CurrentUser, Tag } from "notes-app-types";
 import { NotesService } from "src/notes/notes.service";
 import { eq, and } from "drizzle-orm";
@@ -35,6 +35,52 @@ export class TagsService {
         throw new Error("[createTag] Failed creating a tag", err);
       }
       throw new Error("[createTag] Failed creating a tag (Unknown error)");
+    }
+  }
+
+  async addTagToNote(
+    user: CurrentUser,
+    tagId: string,
+    noteId: string,
+  ): Promise<void> {
+    const foundNote = await this.notesService.getNoteById(user, noteId);
+    const foundTag = await this.getTagById(user, tagId);
+    try {
+      await db.insert(noteTags).values({
+        noteId: foundNote.id,
+        tagId: foundTag.id,
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error("[addTagToNote] Failed adding a tag to a note", err);
+      }
+      throw new Error(
+        "[addTagToNote] Failed adding a tag to a note (Unknown error)",
+      );
+    }
+  }
+
+  async removeTagFromNote(
+    user: CurrentUser,
+    tagId: string,
+    noteId: string,
+  ): Promise<void> {
+    const foundNote = await this.notesService.getNoteById(user, noteId);
+    const foundTag = await this.getTagById(user, tagId);
+    try {
+      await db
+        .delete(noteTags)
+        .where(and(eq(noteTags.noteId, noteId), eq(noteTags.tagId, tagId)));
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error(
+          `[removeTagFromNote] Failed removing tag from note `,
+          err,
+        );
+      }
+      throw new Error(
+        `[removeTagFromNote] Failed removing tag from note (Unknown Error)`,
+      );
     }
   }
 
@@ -73,6 +119,26 @@ export class TagsService {
       throw new NotFoundException(`[getTagById] Tag with ID "${id}" not found`);
     }
     return tag;
+  }
+
+  async getTagsByNote(
+    currentUser: CurrentUser,
+    noteId: string,
+  ): Promise<Tag[]> {
+    if (!isUUID(noteId)) {
+      throw new BadRequestException(
+        `[getTagById] Invalid tag ID format: "${noteId}"`,
+      );
+    }
+
+    const result = await db.query.noteTags.findMany({
+      where: eq(noteTags.noteId, noteId),
+    });
+
+    const tags = await Promise.all(
+      result.map((r) => this.getTagById(currentUser, r.tagId)),
+    );
+    return tags;
   }
 
   async getTagByTitle(user: CurrentUser, title: string): Promise<Tag> {

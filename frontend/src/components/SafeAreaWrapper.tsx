@@ -1,4 +1,4 @@
-import { Platform, View } from "react-native";
+import { Platform, SafeAreaView as SafeAreaViewIos, View } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -14,6 +14,14 @@ const SafeAreaWrapper = ({ children, className, style }: Props) => {
       <View className={className} style={style}>
         {children}
       </View>
+    );
+  }
+
+  if (Platform.OS === "ios") {
+    return (
+      <SafeAreaViewIos className={className} style={style}>
+        {children}
+      </SafeAreaViewIos>
     );
   }
 

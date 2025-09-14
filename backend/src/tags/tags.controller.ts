@@ -27,10 +27,39 @@ export class TagsController {
     return this.tagsService.createTag(user, createTagDto);
   }
 
+  @Post(":tagId/notes/:noteId")
+  @UseGuards(AuthGuard)
+  addTagToNote(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("tagId") tagId: string,
+    @Param("noteId") noteId: string,
+  ) {
+    return this.tagsService.addTagToNote(user, tagId, noteId);
+  }
+
+  @Delete(":tagId/notes/:noteId")
+  @UseGuards(AuthGuard)
+  removeTagFromNote(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("tagId") tagId: string,
+    @Param("noteId") noteId: string,
+  ) {
+    return this.tagsService.removeTagFromNote(user, tagId, noteId);
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   getAllTags(@CurrentUserDecorator() user: CurrentUser) {
     return this.tagsService.getAllTags(user);
+  }
+
+  @Get("note/:id")
+  @UseGuards(AuthGuard)
+  getTagsByNote(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param("id") id: string,
+  ) {
+    return this.tagsService.getTagsByNote(user, id);
   }
 
   @Get(":id")

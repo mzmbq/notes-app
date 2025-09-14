@@ -3682,6 +3682,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.debounce@npm:^4":
+  version: 4.0.9
+  resolution: "@types/lodash.debounce@npm:4.0.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 10c0/9fbb24e5e52616faf60ba5c82d8c6517f4b86fc6e9ab353b4c56c0760f63d9bf53af3f2d8f6c37efa48090359fb96dba1087d497758511f6c40677002191d042
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*, @types/lodash@npm:^4":
+  version: 4.17.20
+  resolution: "@types/lodash@npm:4.17.20"
+  checksum: 10c0/98cdd0faae22cbb8079a01a3bb65aa8f8c41143367486c1cbf5adc83f16c9272a2a5d2c1f541f61d0d73da543c16ee1d21cf2ef86cb93cd0cc0ac3bced6dd88f
+  languageName: node
+  linkType: hard
+
 "@types/methods@npm:^1.1.4":
   version: 1.1.4
   resolution: "@types/methods@npm:1.1.4"
@@ -6757,6 +6773,17 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/32d1ccd630c7e62ec4b71cf03e2414fb389ca5d6383a5243ff9efe6ac71061ea626aa7f1503ccd3187d62451165034265b2ed04e508626710f810c0d0246a81d
+  languageName: node
+  linkType: hard
+
+"expo-blur@npm:~14.1.5":
+  version: 14.1.5
+  resolution: "expo-blur@npm:14.1.5"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/4ffe9014219f23d53f66bc61ea5d00b74a012d120f94a810c71cbdd34901900282a40f7d0636877cd261bc7ff8a3db20da2e0be9393b1a950b8fc677e285bf65
   languageName: node
   linkType: hard
 
@@ -10196,10 +10223,15 @@ __metadata:
     "@react-navigation/native": "npm:^7.1.17"
     "@react-navigation/native-stack": "npm:^7.3.24"
     "@tabler/icons-react-native": "npm:^3.34.1"
+    "@types/lodash": "npm:^4"
+    "@types/lodash.debounce": "npm:^4"
     "@types/react": "npm:~19.0.10"
     expo: "npm:~53.0.20"
+    expo-blur: "npm:~14.1.5"
     expo-secure-store: "npm:~14.2.3"
     expo-status-bar: "npm:~2.2.3"
+    lodash: "npm:^4.17.21"
+    lodash.debounce: "npm:^4.0.8"
     nativewind: "npm:^4.1.23"
     notes-app-types: "workspace:*"
     prettier-plugin-tailwindcss: "npm:^0.5.11"
@@ -11753,6 +11785,8 @@ __metadata:
 "root-workspace-0b6124@workspace:.":
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
+  dependencies:
+    expo-blur: "npm:~14.1.5"
   languageName: unknown
   linkType: soft
 
